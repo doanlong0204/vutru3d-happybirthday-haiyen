@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Không Gian 3D Sinh Nhật - Hiệu Ứng Phun Trào Ảnh</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000002;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        #canvas3d {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 10;
+            pointer-events: none;
+            font-size: 0.9rem;
+            text-shadow: 0 0 5px #000;
+            text-align: center;
+            width: 90%;
+            white-space: nowrap;
+        }
+        .instructions strong {
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 0 8px rgba(255, 42, 109, 0.6);
+        }
+        
+        /* --- CỤM ĐIỀU KHIỂN PLAYLIST TỰ ĐỘNG CHUYỂN BÀI --- */
+        .music-box {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .music-control, .music-select {
+            background: rgba(255, 42, 109, 0.2);
+            border: 1px solid #ff2a6d;
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 42, 109, 0.4);
+            font-weight: bold;
+            outline: none;
+        }
+        .music-select {
+            padding-right: 30px;
+            appearance: none; 
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23fff'><polygon points='0,0 10,0 5,5'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        .music-select option {
+            background: #120107;
+            color: #fff;
+        }
+        .music-control:hover, .music-select:hover {
+            background: rgba(255, 42, 109, 0.5);
+            box-shadow: 0 0 15px #ff2a6d;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+</head>
+<body>
+
+    <div class="instructions">Giữ chuột trái và kéo để xoay • Cuộn chuột để zoom • Click ảnh để phóng to • <strong>Design by Đoàn Long</strong></div>
+    
+    <div class="music-box">
+        <select class="music-select" id="musicSelect">
+            <option value="https://github.com/doanlong0204/snhy/raw/06fbaf6b3e4cec5e3edc08a07c61857e9e447d58/v1c044g50000d87tn9vog65ihr2mns9g.mp3">🎵 Giai điệu 01</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/06fbaf6b3e4cec5e3edc08a07c61857e9e447d58/v1c044g50000d8nl5fnog65hp45tjbsg.mp3">🎵 Giai điệu 02</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/refs/heads/main/5683779480985678588.mp3">🎵 Giai điệu 03</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/refs/heads/main/v14044g50000d91qlmvog65sb71ggir0.mp3">🎵 Giai điệu 04</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/refs/heads/main/6773625325457047284.mp3">🎵 Giai điệu 05</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/06fbaf6b3e4cec5e3edc08a07c61857e9e447d58/v10025g50000d7vr1lfog65r8j52jlk0.mp3">🎵 Giai điệu 06</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/refs/heads/main/v29025g50000d933h5vog65so4fnh2hg.mp3">🎵 Giai điệu 07</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/refs/heads/main/6755706351985761600.mp3">🎵 Giai điệu 08</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/refs/heads/main/8761995520364850288.mp3">🎵 Giai điệu 09</option>
+            <option value="https://github.com/doanlong0204/snhy/raw/refs/heads/main/555931068084403746%20(mp3cut.net)%20(1).mp3">🎵 Đặc Cầu 😈</option>
+        </select>
+        <button class="music-control" id="musicBtn">🔇 Tắt</button>
+    </div>
+
+    <audio id="bgMusic"></audio>
+
+    <canvas id="canvas3d"></canvas>
+
+    <script>
+        // --- Xử lý Nhạc nền & Tự động chuyển bài liên hoàn ---
+        const bgMusic = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicBtn');
+        const musicSelect = document.getElementById('musicSelect');
+        let isMusicPlaying = false;
+
+        bgMusic.src = musicSelect.value;
+
+        function playMusic() {
+            if (!isMusicPlaying) {
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicBtn.innerHTML = '🔊 Bật';
+                }).catch(err => {
+                    console.log("Chờ người dùng tương tác để phát nhạc...", err);
+                });
+            }
+        }
+
+        window.addEventListener('click', () => {
+            playMusic();
+        }, { once: true });
+
+        musicBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                isMusicPlaying = false;
+                musicBtn.innerHTML = '🔇 Tắt';
+            } else {
+                bgMusic.play();
+                isMusicPlaying = true;
+                musicBtn.innerHTML = '🔊 Bật';
+            }
+        });
+
+        musicSelect.addEventListener('change', (e) => {
+            e.stopPropagation();
+            bgMusic.src = musicSelect.value;
+            bgMusic.load();
+            bgMusic.play().then(() => {
+                isMusicPlaying = true;
+                musicBtn.innerHTML = '🔊 Bật';
+            }).catch(err => console.log(err));
+        });
+
+        bgMusic.addEventListener('ended', () => {
+            let nextIndex = musicSelect.selectedIndex + 1;
+            if (nextIndex >= musicSelect.options.length) {
+                nextIndex = 0; 
+            }
+            musicSelect.selectedIndex = nextIndex;
+            bgMusic.src = musicSelect.value;
+            bgMusic.load();
+            bgMusic.play().then(() => {
+                isMusicPlaying = true;
+                musicBtn.innerHTML = '🔊 Bật';
+            }).catch(err => console.log("Lỗi tự động chuyển bài:", err));
+        });
+
+        musicSelect.addEventListener('click', (e) => e.stopPropagation());
+
+        // --- 1. Thiết lập Không gian Three.js ---
+        const canvas = document.getElementById('canvas3d');
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 100, 280);
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const renderScene = new THREE.RenderPass(scene, camera);
+        const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.5,    
+            0.4,    
+            0.85    
+        );
+
+        // --- HỆ THỐNG CUSTOM SHADER BẺ CONG KHÔNG GIAN (GRAVITATIONAL LENSING) ---
+        const GravitationalLensingShader = {
+            uniforms: {
+                'tDiffuse': { value: null },
+                'uCenter': { value: new THREE.Vector2(0.5, 0.5) },
+                'uRadius': { value: 0.025 },
+                'uStrength': { value: 0.0012 },
+                'uAspect': { value: window.innerWidth / window.innerHeight }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D tDiffuse;
+                uniform vec2 uCenter;
+                uniform float uRadius;
+                uniform float uStrength;
+                uniform float uAspect;
+                varying vec2 vUv;
+                void main() {
+                    vec2 uv = vUv;
+                    vec2 diff = uv - uCenter;
+                    diff.x *= uAspect;
+                    float dist = length(diff);
+                    
+                    if (dist > uRadius) {
+                        float falloff = 1.0 / (dist * 18.0);
+                        vec2 distort = normalize(vUv - uCenter) * (uStrength * falloff);
+                        uv -= distort;
+                    }
+                    gl_FragColor = texture2D(tDiffuse, uv);
+                }
+            `
+        };
+
+        const lensingPass = new THREE.ShaderPass(GravitationalLensingShader);
+        
+        const composer = new THREE.EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+        composer.addPass(lensingPass); 
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 600;
+        controls.minDistance = 40;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+        scene.add(ambientLight);
+
+        // --- 2. Tạo Nền Trời Sao Vũ Trụ ---
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 10000; 
+        const starPositions = new Float32Array(starsCount * 3);
+
+        for(let i = 0; i < starsCount * 3; i++) {
+            starPositions[i] = (Math.random() - 0.5) * 1500;
+        }
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starsMaterial = new THREE.PointsMaterial({ color: 0xffb7d5, size: 1.6, sizeAttenuation: true });
+        const starField = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(starField);
+
+        // --- HỆ THỐNG TINH VÂN (NEBULA) MỜ ẢO QUANH NỀN TRỜI ---
+        function createNebulaTexture() {
+            const canvasNebula = document.createElement('canvas');
+            canvasNebula.width = 512;
+            canvasNebula.height = 512;
+            const ctxN = canvasNebula.getContext('2d');
+            
+            const grad = ctxN.createRadialGradient(256, 256, 10, 256, 256, 256);
+            grad.addColorStop(0, 'rgba(255, 42, 109, 0.35)');  
+            grad.addColorStop(0.4, 'rgba(120, 30, 200, 0.18)'); 
+            grad.addColorStop(0.7, 'rgba(30, 80, 220, 0.06)');  
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctxN.fillStyle = grad;
+            ctxN.fillRect(0, 0, 512, 512);
+            return new THREE.CanvasTexture(canvasNebula);
+        }
+
+        const nebulaGroup = new THREE.Group();
+        scene.add(nebulaGroup);
+        const nebulaGeo = new THREE.PlaneGeometry(900, 900);
+        const nebulaTex = createNebulaTexture();
+
+        for (let i = 0; i < 5; i++) {
+            const nebulaMat = new THREE.MeshBasicMaterial({
+                map: nebulaTex,
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                side: THREE.DoubleSide
+            });
+            const nebulaMesh = new THREE.Mesh(nebulaGeo, nebulaMat);
+            nebulaMesh.position.set((Math.random() - 0.5) * 300, (Math.random() - 0.5) * 300, -400 - i * 80);
+            nebulaMesh.rotation.z = Math.random() * Math.PI * 2;
+            nebulaMesh.userData = { rotSpeed: (Math.random() - 0.5) * 0.015 };
+            nebulaGroup.add(nebulaMesh);
+        }
+
+        // --- 3. Tạo Hố Trung Tâm ---
+        const blackHoleGroup = new THREE.Group();
+        scene.add(blackHoleGroup);
+
+        const singularityGeo = new THREE.SphereGeometry(16, 48, 48); 
+        const singularityMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const singularity = new THREE.Mesh(singularityGeo, singularityMat);
+        blackHoleGroup.add(singularity);
+
+        const diskCount = 6000; 
+        const diskGeometry = new THREE.BufferGeometry();
+        const diskPositions = new Float32Array(diskCount * 3);
+        const diskColors = new Float32Array(diskCount * 3);
+
+        const colorInner = new THREE.Color('#ff2a6d');
+        const colorOuter = new THREE.Color('#ff8ebb');
+
+        for (let i = 0; i < diskCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 18 + Math.random() * 35; 
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            const y = (Math.random() - 0.5) * 2 + (Math.sin(radius * 0.5) * 1.5); 
+
+            diskPositions[i * 3] = x;
+            diskPositions[i * 3 + 1] = y;
+            diskPositions[i * 3 + 2] = z;
+
+            const mixedColor = colorInner.clone().lerp(colorOuter, (radius - 18) / 35);
+            diskColors[i * 3] = mixedColor.r;
+            diskColors[i * 3 + 1] = mixedColor.g;
+            diskColors[i * 3 + 2] = mixedColor.b;
+        }
+
+        diskGeometry.setAttribute('position', new THREE.BufferAttribute(diskPositions, 3));
+        diskGeometry.setAttribute('color', new THREE.BufferAttribute(diskColors, 3));
+
+        const diskMaterial = new THREE.PointsMaterial({
+            size: 0.7,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.85,
+            blending: THREE.AdditiveBlending 
+        });
+        const accretionDisk = new THREE.Points(diskGeometry, diskMaterial);
+        blackHoleGroup.add(accretionDisk);
+
+        // --- 4. Khởi Tạo Dữ Liệu Lời Chúc và Hình Ảnh ---
+        const rawContents = [
+            { type: 'text', value: 'Happy Birthday!' },
+            { type: 'text', value: 'Chúc Yến sinh nhật vui vẻ!' },
+            { type: 'text', value: 'Tuổi mới hạnh phúc!' },
+            { type: 'text', value: 'Xinh đẹp tuyệt vời!' },
+            { type: 'text', value: 'Luôn luôn học giỏi!' },
+            { type: 'text', value: '22/07/2009' },
+            { type: 'text', value: 'Nguyễn Thị Hải Yến' },
+            { type: 'text', value: '✨' },
+            { type: 'text', value: '🍰' },
+            { type: 'text', value: '🎉' },
+            { type: 'text', value: '🐷' }
+        ];
+
+        const danhSachAnhCuaToi = [
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/0b83012d6dc2ec9cb5d33.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/14ae7bb3145c9502cc4d19.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/150eccbfa050210e78416.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/24f3cc41a0ae21f078bf8.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/3f1c770118ee99b0c0ff20.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/40c14d6f2180a0def9912.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/6db762190ef68fa8d6e71.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/6ede27684b87cad9939611.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/9c410ff66319e247bb0812.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/9c8cfd3d91d2108c49c37.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/a1c930715c9eddc0848f14.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/afc658693486b5d8ec974.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/c7ef2ef2411dc043990c18.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/ca4b86fcea136b4d320213.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/cbc0ee2b80c4019a58d515.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/dfc00f75639ae2c4bb8b10.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/ea8e292145cec4909ddf5.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/f1ebc617a8f829a670e916.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/f1f269ef060075ede1117.jpg',
+            'https://raw.githubusercontent.com/doanlong0204/snhy220729/refs/heads/main/fe137fa0134f9211cb5e9.jpg'
+        ];
+
+        danhSachAnhCuaToi.forEach(linkAnh => {
+            rawContents.push({ type: 'image', value: linkAnh });
+        });
+
+        const targetTotalObjects = 110; 
+        let contents = [];
+        while (contents.length < targetTotalObjects) {
+            contents = [...contents, ...rawContents];
+        }
+        contents = contents.slice(0, targetTotalObjects);
+
+        for (let i = contents.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [contents[i], contents[j]] = [contents[j], contents[i]];
+        }
+
+        const floatingItems = [];
+        const textureCache = {};
+
+        function createRoundedImageTexture(imageUrl) {
+            if (textureCache[imageUrl]) return textureCache[imageUrl];
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const size = 512;
+            canvas.width = size;
+            canvas.height = size;
+            
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = imageUrl;
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            
+            img.onload = function() {
+                ctx.clearRect(0, 0, size, size);
+                const radius = 60;
+                ctx.beginPath();
+                ctx.moveTo(radius, 0);
+                ctx.lineTo(size - radius, 0);
+                ctx.quadraticCurveTo(size, 0, size, radius);
+                ctx.lineTo(size, size - radius);
+                ctx.quadraticCurveTo(size, size, size - radius, size);
+                ctx.lineTo(radius, size);
+                ctx.quadraticCurveTo(0, size, 0, size - radius);
+                ctx.lineTo(0, radius);
+                ctx.quadraticCurveTo(0, 0, radius, 0);
+                ctx.closePath();
+                
+                ctx.clip();
+                ctx.drawImage(img, 0, 0, size, size);
+                texture.needsUpdate = true;
+            };
+            
+            textureCache[imageUrl] = texture;
+            return texture;
+        }
+
+        function createTextTexture(text) {
+            if (textureCache['text_' + text]) return textureCache['text_' + text];
+
+            const canvasText = document.createElement('canvas');
+            const ctxText = canvasText.getContext('2d');
+            canvasText.width = 512;
+            canvasText.height = 128;
+            
+            ctxText.fillStyle = 'rgba(0,0,0,0)';
+            ctxText.fillRect(0, 0, canvasText.width, canvasText.height);
+            
+            ctxText.font = 'Bold 42px Arial'; 
+            ctxText.fillStyle = '#ffffff';
+            ctxText.textAlign = 'center';
+            ctxText.shadowColor = '#ff69b4';
+            ctxText.shadowBlur = 15;
+            ctxText.fillText(text, 256, 70);
+            
+            const texture = new THREE.CanvasTexture(canvasText);
+            textureCache['text_' + text] = texture;
+            return texture;
+        }
+
+        // --- Hệ thống Pháo hoa 3D ---
+        const fireworks = [];
+        const fireworkGeometry = new THREE.BufferGeometry();
+        const fireworkPositions = new Float32Array(300 * 3);
+        const fireworkColors = new Float32Array(300 * 3);
+        const fireworkOpacities = new Float32Array(300);
+        
+        fireworkGeometry.setAttribute('position', new THREE.BufferAttribute(fireworkPositions, 3));
+        fireworkGeometry.setAttribute('color', new THREE.BufferAttribute(fireworkColors, 3));
+        fireworkGeometry.setAttribute('opacity', new THREE.BufferAttribute(fireworkOpacities, 1));
+        
+        const fireworkMaterial = new THREE.PointsMaterial({
+            size: 1.2,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+        
+        const fireworkSystem = new THREE.Points(fireworkGeometry, fireworkMaterial);
+        scene.add(fireworkSystem);
+        
+        function createFirework(position) {
+            const colors = [0xff69b4, 0xff2a6d, 0xff8ebb, 0xffffff, 0xffd700];
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                if (fireworks.length >= 300) break;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 0.5 + Math.random() * 1.5;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                fireworks.push({
+                    position: position.clone(),
+                    velocity: new THREE.Vector3(
+                        Math.cos(angle) * speed,
+                        (Math.random() - 0.5) * speed,
+                        Math.sin(angle) * speed
+                    ),
+                    life: 1.0,
+                    color: new THREE.Color(color)
+                });
+            }
+        }
+        
+        function updateFireworks() {
+            for (let i = 0; i < fireworks.length; i++) {
+                const fw = fireworks[i];
+                fw.life -= 0.015;
+                fw.position.add(fw.velocity);
+                fw.velocity.multiplyScalar(0.98);
+                
+                if (fw.life <= 0) {
+                    fireworks.splice(i, 1);
+                    i--;
+                    continue;
+                }
+                
+                fireworkPositions[i * 3] = fw.position.x;
+                fireworkPositions[i * 3 + 1] = fw.position.y;
+                fireworkPositions[i * 3 + 2] = fw.position.z;
+                
+                fireworkColors[i * 3] = fw.color.r;
+                fireworkColors[i * 3 + 1] = fw.color.g;
+                fireworkColors[i * 3 + 2] = fw.color.b;
+                
+                fireworkOpacities[i] = fw.life;
+            }
+            
+            for (let i = fireworks.length; i < 300; i++) {
+                fireworkPositions[i * 3] = 0;
+                fireworkPositions[i * 3 + 1] = 0;
+                fireworkPositions[i * 3 + 2] = 0;
+                fireworkOpacities[i] = 0;
+            }
+            
+            fireworkGeometry.attributes.position.needsUpdate = true;
+            fireworkGeometry.attributes.color.needsUpdate = true;
+            fireworkGeometry.attributes.opacity.needsUpdate = true;
+        }
+
+        function resetItemPosition(mesh, isFirstTime = false) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = isFirstTime ? (20 + Math.random() * 450) : (16 + Math.random() * 5); 
+            
+            mesh.position.x = Math.cos(angle) * distance;
+            mesh.position.y = isFirstTime ? (Math.random() - 0.5) * 280 : (Math.random() - 0.5) * 30; 
+            mesh.position.z = Math.sin(angle) * distance;
+            
+            if (!isFirstTime) {
+                mesh.scale.set(0, 0, 0);
+            }
+        }
+
+        // --- ĐÃ PHỤC HỒI VỀ 2D PLANE (KHÔNG KHỐI HỘP - KHÔNG VIỀN NEON) ---
+        contents.forEach((data, index) => {
+            let geometry;
+            let material;
+
+            if (data.type === 'text') {
+                const textTexture = createTextTexture(data.value);
+                geometry = new THREE.PlaneGeometry(72, 18); 
+                material = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true, side: THREE.DoubleSide });
+            } else {
+                const imgTexture = createRoundedImageTexture(data.value);
+                geometry = new THREE.PlaneGeometry(22, 22); 
+                material = new THREE.MeshBasicMaterial({ map: imgTexture, transparent: true, side: THREE.DoubleSide });
+            }
+
+            const mesh = new THREE.Mesh(geometry, material);
+            resetItemPosition(mesh, true); 
+
+            mesh.userData = {
+                speed: 0.25 + Math.random() * 0.35, 
+                delay: index * 8 
+            };
+
+            scene.add(mesh);
+            floatingItems.push(mesh);
+        });
+
+        // --- Raycaster & Tương tác chuột ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let selectedItem = null;
+        let originalCameraPos = null;
+        let isZoomed = false;
+        
+        let mouseWorldPos = new THREE.Vector3();
+        let mousePlane = new THREE.Plane();
+        
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            
+            const cameraDirection = new THREE.Vector3();
+            camera.getWorldDirection(cameraDirection);
+            mousePlane.setFromNormalAndCoplanarPoint(cameraDirection.clone().negate(), new THREE.Vector3(0, 0, 0));
+            raycaster.ray.intersectPlane(mousePlane, mouseWorldPos);
+        }
+        
+        window.addEventListener('mousemove', onMouseMove);
+
+        function onMouseClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(floatingItems);
+
+            if (intersects.length > 0) {
+                const clickedItem = intersects[0].object;
+                
+                if (!isZoomed) {
+                    selectedItem = clickedItem;
+                    originalCameraPos = camera.position.clone();
+                    selectedItem.userData.originalSpeed = selectedItem.userData.speed;
+                    selectedItem.userData.speed = 0; 
+                    
+                    controls.enabled = false;
+                    
+                    const targetPos = clickedItem.position.clone().add(new THREE.Vector3(0, 0, 60));
+                    camera.position.copy(targetPos);
+                    camera.lookAt(clickedItem.position);
+                    
+                    selectedItem.scale.set(2, 2, 2);
+                    isZoomed = true;
+                } else if (selectedItem === clickedItem) {
+                    selectedItem.userData.speed = selectedItem.userData.originalSpeed;
+                    selectedItem.scale.set(1, 1, 1);
+                    
+                    if (originalCameraPos) {
+                        camera.position.copy(originalCameraPos);
+                    }
+                    
+                    controls.enabled = true; 
+                    controls.target.set(0, 0, 0);
+                    
+                    selectedItem = null;
+                    isZoomed = false;
+                }
+            } else if (isZoomed) {
+                if (selectedItem) {
+                    selectedItem.userData.speed = selectedItem.userData.originalSpeed;
+                    selectedItem.scale.set(1, 1, 1);
+                }
+                
+                if (originalCameraPos) {
+                    camera.position.copy(originalCameraPos);
+                }
+                
+                controls.enabled = true;
+                controls.target.set(0, 0, 0);
+                
+                selectedItem = null;
+                isZoomed = false;
+            }
+        }
+
+        window.addEventListener('click', onMouseClick);
+
+        // --- 5. Hàm Vòng Lặp Hoạt Họa ---
+        const clock = new THREE.Clock();
+        const maxTravelDistance = 500; 
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            accretionDisk.rotation.y = elapsedTime * -1.0; 
+            singularity.rotation.y = elapsedTime * 0.12;
+
+            nebulaGroup.children.forEach(cloud => {
+                cloud.rotation.z += cloud.userData.rotSpeed * 0.2;
+            });
+
+            floatingItems.forEach((item) => {
+                if(item.userData.delay > 0) {
+                    item.userData.delay--;
+                    item.visible = false;
+                    return;
+                }
+                item.visible = true;
+
+                item.lookAt(camera.position);
+
+                const distanceToCenter = item.position.length();
+
+                if (distanceToCenter < maxTravelDistance) {
+                    const direction = item.position.clone().normalize();
+                    if(direction.length() === 0) direction.set(1, 0, 0); 
+                    
+                    item.position.add(direction.multiplyScalar(item.userData.speed));
+                    
+                    const distanceToMouse = item.position.distanceTo(mouseWorldPos);
+                    if (distanceToMouse < 80 && distanceToMouse > 0 && !isZoomed) {
+                        const pushDirection = item.position.clone().sub(mouseWorldPos).normalize();
+                        const pushStrength = (80 - distanceToMouse) * 0.02;
+                        item.position.add(pushDirection.multiplyScalar(pushStrength));
+                    }
+                    
+                    item.position.y += Math.sin(elapsedTime * 2 + distanceToCenter * 0.05) * 0.15;
+
+                    if (distanceToCenter < 120) {
+                        const scaleFactor = (distanceToCenter - 16) / 104; 
+                        const clampedScale = Math.max(0, Math.min(1, scaleFactor));
+                        item.scale.set(clampedScale, clampedScale, clampedScale);
+                    } else if (distanceToCenter > maxTravelDistance - 80) {
+                        const scaleFactor = (maxTravelDistance - distanceToCenter) / 80;
+                        const clampedScale = Math.max(0, Math.min(1, scaleFactor));
+                        item.scale.set(clampedScale, clampedScale, clampedScale);
+                    } else if (!isZoomed || item !== selectedItem) {
+                        item.scale.set(1, 1, 1);
+                    }
+                } else {
+                    createFirework(item.position.clone());
+                    resetItemPosition(item);
+                }
+            });
+
+            updateFireworks();
+
+            if (!isZoomed) {
+                controls.update();
+            }
+            
+            composer.render();
+        }
+
+        animate();
+
+        // --- 6. Định Dạng Lại Khi Thay Đổi Kích Thước Màn Hình ---
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            
+            renderer.setSize(width, height);
+            composer.setSize(width, height);
+            
+            lensingPass.uniforms.uAspect.value = width / height;
+        });
+    </script>
+</body>
+</html>
