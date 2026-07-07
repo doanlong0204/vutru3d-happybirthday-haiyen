@@ -2,8 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Không Gian 3D Sinh Nhật - Hiệu Ứng Phun Trào Ảnh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Không Gian 3D - Tinh Vân Vũ Trụ</title>
     <style>
         body, html {
             margin: 0;
@@ -13,6 +13,9 @@
             background-color: #000002;
             overflow: hidden;
             font-family: 'Arial', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
         }
         #canvas3d {
             position: absolute;
@@ -30,11 +33,10 @@
             color: rgba(255, 255, 255, 0.6);
             z-index: 10;
             pointer-events: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-shadow: 0 0 5px #000;
             text-align: center;
             width: 90%;
-            white-space: nowrap;
         }
         .instructions strong {
             font-weight: bold;
@@ -42,44 +44,122 @@
             text-shadow: 0 0 8px rgba(255, 42, 109, 0.6);
         }
         
-        /* --- CỤM ĐIỀU KHIỂN PLAYLIST TỰ ĐỘNG CHUYỂN BÀI --- */
         .music-box {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             z-index: 100;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
         }
-        .music-control, .music-select {
-            background: rgba(255, 42, 109, 0.2);
-            border: 1px solid #ff2a6d;
+        .music-control, .music-select, .theme-select {
+            background: rgba(255, 42, 109, 0.15);
+            border: 1px solid rgba(255, 42, 109, 0.6);
             color: #ffffff;
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 12px 16px;
+            border-radius: 24px;
             cursor: pointer;
-            font-size: 0.95rem;
-            backdrop-filter: blur(5px);
+            font-size: 0.9rem;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(255, 42, 109, 0.4);
+            box-shadow: 0 0 10px rgba(255, 42, 109, 0.3);
             font-weight: bold;
             outline: none;
         }
+        .theme-select {
+            background: rgba(5, 217, 232, 0.15);
+            border: 1px solid rgba(5, 217, 232, 0.6);
+            box-shadow: 0 0 10px rgba(5, 217, 232, 0.3);
+        }
         .music-select {
-            padding-right: 30px;
+            padding-right: 32px;
             appearance: none; 
+            -webkit-appearance: none;
             background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23fff'><polygon points='0,0 10,0 5,5'/></svg>");
             background-repeat: no-repeat;
-            background-position: right 12px center;
+            background-position: right 14px center;
         }
-        .music-select option {
+        .music-select option, .theme-select option {
             background: #120107;
             color: #fff;
         }
-        .music-control:hover, .music-select:hover {
-            background: rgba(255, 42, 109, 0.5);
-            box-shadow: 0 0 15px #ff2a6d;
+        
+        /* CSS cho Màn hình chào mừng */
+        #splashScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, #0c0105 0%, #000002 100%);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+        }
+        .welcome-box {
+            text-align: center;
+            color: #fff;
+            padding: 20px;
+            max-width: 450px;
+        }
+        .gift-glow {
+            font-size: 5rem;
+            animation: floatGlow 2s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 20px #ff2a6d);
+        }
+        @keyframes floatGlow {
+            0% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 15px #ff2a6d); }
+            100% { transform: translateY(-15px) scale(1.05); filter: drop-shadow(0 0 30px #05d9e8); }
+        }
+        .welcome-box h1 {
+            font-size: 1.8rem;
+            margin-top: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255,42,109,0.8);
+        }
+        .welcome-box p {
+            color: #ccc;
+            font-size: 0.95rem;
+            margin: 15px 0 30px 0;
+        }
+        #startBtn {
+            background: transparent;
+            border: 2px solid #ff2a6d;
+            color: #fff;
+            padding: 12px 32px;
+            border-radius: 30px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255,42,109,0.4);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        #startBtn:hover {
+            background: #ff2a6d;
+            box-shadow: 0 0 25px #ff2a6d;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .music-box {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                justify-content: space-between;
+                gap: 5px;
+            }
+            .music-select, .theme-select, .music-control {
+                padding: 10px 12px;
+                font-size: 0.75rem;
+            }
+            .music-select { max-width: 35%; padding-right: 22px; }
+            .theme-select { max-width: 40%; }
+            .instructions {
+                font-size: 0.75rem;
+                bottom: 15px;
+            }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -90,12 +170,32 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
 
-    <div class="instructions">Giữ chuột trái và kéo để xoay • Cuộn chuột để zoom • Click ảnh để phóng to • <strong>Design by Đoàn Long</strong></div>
+    <div id="splashScreen">
+        <div class="welcome-box">
+            <div class="gift-glow">☄️</div>
+            <h1>Khám Phá Không Gian Ảnh 3D</h1>
+            <p>Chạm để mở quà từ <strong>@doanlongg_4210</strong></p>
+            <button id="startBtn">BẮT ĐẦU TRẢI NGHIỆM</button>
+        </div>
+    </div>
+
+    <div class="instructions">Xoay/Zoom không gian • Chạm ảnh để phóng to • <strong>Design by Đoàn Long</strong></div>
     
     <div class="music-box">
+        <select class="theme-select" id="themeSelect">
+            <option value="cyber">🌸 Hồng Mặc Định</option>
+            <option value="emerald">💵 Xanh Lục Bảo</option>
+            <option value="sapphire">💎 Xanh Dương Mờ</option>
+            <option value="gold">⭐ Vàng Vũ Trụ</option>
+            <option value="ruby">♦️ Đỏ Ruby</option>
+            <option value="amethyst">🔮 Tím Thạch Anh</option>
+            <option value="monochrome">☁️ Trắng Bụi</option>
+        </select>
+
         <select class="music-select" id="musicSelect">
             <option value="https://files.catbox.moe/52suk6.mp3">🎵 Giai điệu 01</option>
             <option value="https://files.catbox.moe/0gu178.mp3">🎵 Giai điệu 02</option>
@@ -111,49 +211,89 @@
         <button class="music-control" id="musicBtn">🔇 Tắt</button>
     </div>
 
-    <audio id="bgMusic"></audio>
-
+    <audio id="bgMusic" loop playsinline></audio> 
     <canvas id="canvas3d"></canvas>
 
     <script>
-        // --- Xử lý Nhạc nền & Tự động chuyển bài liên hoàn ---
+        // --- Cấu hình dữ liệu 7 Theme màu sắc ---
+        const themes = {
+            cyber: { inner: '#ff2a6d', outer: '#ff8ebb', star: '#ffb7d5', nebula: 'rgba(255, 42, 109, 0.35)' },
+            emerald: { inner: '#00ffaa', outer: '#70ffca', star: '#b7ffe4', nebula: 'rgba(0, 255, 170, 0.35)' },
+            sapphire: { inner: '#05d9e8', outer: '#7bf0f8', star: '#b7f5ff', nebula: 'rgba(5, 217, 232, 0.35)' },
+            gold: { inner: '#ffd700', outer: '#ffeb7a', star: '#fff8d5', nebula: 'rgba(255, 215, 0, 0.35)' },
+            ruby: { inner: '#ff0000', outer: '#ff6666', star: '#ffb7b7', nebula: 'rgba(255, 0, 0, 0.35)' },
+            amethyst: { inner: '#b026ff', outer: '#da9eff', star: '#ebd5ff', nebula: 'rgba(176, 38, 255, 0.35)' },
+            monochrome: { inner: '#ffffff', outer: '#aaaaaa', star: '#ffffff', nebula: 'rgba(255, 255, 255, 0.2)' }
+        };
+
+        // --- Xử lý Nhạc nền & Màn hình chào mừng ---
         const bgMusic = document.getElementById('bgMusic');
         const musicBtn = document.getElementById('musicBtn');
         const musicSelect = document.getElementById('musicSelect');
+        const themeSelect = document.getElementById('themeSelect');
+        const startBtn = document.getElementById('startBtn');
+        const splashScreen = document.getElementById('splashScreen');
         let isMusicPlaying = false;
 
         bgMusic.src = musicSelect.value;
 
-        function playMusic() {
-            if (!isMusicPlaying) {
-                bgMusic.play().then(() => {
-                    isMusicPlaying = true;
-                    musicBtn.innerHTML = '🔊 Bật';
-                }).catch(err => {
-                    console.log("Chờ người dùng tương tác để phát nhạc...", err);
-                });
-            }
-        }
+        startBtn.addEventListener('click', () => {
+            bgMusic.play().then(() => {
+                isMusicPlaying = true;
+                musicBtn.innerHTML = '🔊 Bật';
+            }).catch(err => console.log("Chờ tương tác...", err));
 
-        window.addEventListener('click', () => {
-            playMusic();
-        }, { once: true });
+            gsap.to(splashScreen, {
+                opacity: 0,
+                duration: 1.2,
+                onComplete: () => splashScreen.style.display = 'none'
+            });
 
-        musicBtn.addEventListener('click', (e) => {
+            // Cú lướt camera cinematic từ không gian sâu bay vào trung tâm hố đen
+            gsap.to(camera.position, {
+                x: 0,
+                y: 100,
+                z: 280,
+                duration: 2.5,
+                ease: "power3.out"
+            });
+        });
+
+        function toggleMusic(e) {
             e.stopPropagation(); 
+            e.preventDefault();
             if (isMusicPlaying) {
                 bgMusic.pause();
                 isMusicPlaying = false;
                 musicBtn.innerHTML = '🔇 Tắt';
             } else {
-                bgMusic.play();
-                isMusicPlaying = true;
-                musicBtn.innerHTML = '🔊 Bật';
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicBtn.innerHTML = '🔊 Bật';
+                });
             }
-        });
+        }
 
-        musicSelect.addEventListener('change', (e) => {
+        musicBtn.addEventListener('click', toggleMusic);
+        musicBtn.addEventListener('touchstart', toggleMusic);
+
+        function changeTrack(e) {
             e.stopPropagation();
+            bgMusic.src = musicSelect.value;
+            bgMusic.load();
+            if (isMusicPlaying) {
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicBtn.innerHTML = '🔊 Bật';
+                }).catch(err => console.log(err));
+            }
+        }
+        musicSelect.addEventListener('change', changeTrack);
+
+        bgMusic.addEventListener('ended', () => {
+            let nextIndex = musicSelect.selectedIndex + 1;
+            if (nextIndex >= musicSelect.options.length) nextIndex = 0; 
+            musicSelect.selectedIndex = nextIndex;
             bgMusic.src = musicSelect.value;
             bgMusic.load();
             bgMusic.play().then(() => {
@@ -162,28 +302,18 @@
             }).catch(err => console.log(err));
         });
 
-        bgMusic.addEventListener('ended', () => {
-            let nextIndex = musicSelect.selectedIndex + 1;
-            if (nextIndex >= musicSelect.options.length) {
-                nextIndex = 0; 
-            }
-            musicSelect.selectedIndex = nextIndex;
-            bgMusic.src = musicSelect.value;
-            bgMusic.load();
-            bgMusic.play().then(() => {
-                isMusicPlaying = true;
-                musicBtn.innerHTML = '🔊 Bật';
-            }).catch(err => console.log("Lỗi tự động chuyển bài:", err));
+        ['click', 'touchstart', 'touchend'].forEach(evt => {
+            musicSelect.addEventListener(evt, (e) => e.stopPropagation());
+            themeSelect.addEventListener(evt, (e) => e.stopPropagation());
+            musicBtn.addEventListener(evt, (e) => e.stopPropagation());
         });
-
-        musicSelect.addEventListener('click', (e) => e.stopPropagation());
 
         // --- 1. Thiết lập Không gian Three.js ---
         const canvas = document.getElementById('canvas3d');
         const scene = new THREE.Scene();
         
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
-        camera.position.set(0, 100, 280);
+        camera.position.set(0, 500, 1200); // Đặt camera ở xa tít vũ trụ trước khi bấm nút Bắt đầu
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -192,12 +322,10 @@
         const renderScene = new THREE.RenderPass(scene, camera);
         const bloomPass = new THREE.UnrealBloomPass(
             new THREE.Vector2(window.innerWidth, window.innerHeight),
-            1.5,    
-            0.4,    
-            0.85    
+            1.2, 0.4, 0.85    
         );
 
-        // --- HỆ THỐNG CUSTOM SHADER BẺ CONG KHÔNG GIAN (GRAVITATIONAL LENSING) ---
+        // --- CUSTOM SHADER GRAVITATIONAL LENSING ---
         const GravitationalLensingShader = {
             uniforms: {
                 'tDiffuse': { value: null },
@@ -225,7 +353,6 @@
                     vec2 diff = uv - uCenter;
                     diff.x *= uAspect;
                     float dist = length(diff);
-                    
                     if (dist > uRadius) {
                         float falloff = 1.0 / (dist * 18.0);
                         vec2 distort = normalize(vUv - uCenter) * (uStrength * falloff);
@@ -237,7 +364,6 @@
         };
 
         const lensingPass = new THREE.ShaderPass(GravitationalLensingShader);
-        
         const composer = new THREE.EffectComposer(renderer);
         composer.addPass(renderScene);
         composer.addPass(bloomPass);
@@ -248,38 +374,36 @@
         controls.dampingFactor = 0.05;
         controls.maxDistance = 600;
         controls.minDistance = 40;
+        controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
         scene.add(ambientLight);
 
-        // --- 2. Tạo Nền Trời Sao Vũ Trụ ---
+        // --- 2. Tạo Nền Trời Sao ---
         const starsGeometry = new THREE.BufferGeometry();
-        const starsCount = 10000; 
+        const starsCount = window.innerWidth < 600 ? 5000 : 10000; 
         const starPositions = new Float32Array(starsCount * 3);
 
         for(let i = 0; i < starsCount * 3; i++) {
             starPositions[i] = (Math.random() - 0.5) * 1500;
         }
         starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-        const starsMaterial = new THREE.PointsMaterial({ color: 0xffb7d5, size: 1.6, sizeAttenuation: true });
+        const starsMaterial = new THREE.PointsMaterial({ color: 0xffb7d5, size: 1.5, sizeAttenuation: true });
         const starField = new THREE.Points(starsGeometry, starsMaterial);
         scene.add(starField);
 
-        // --- HỆ THỐNG TINH VÂN (NEBULA) MỜ ẢO QUANH NỀN TRỜI ---
+        // --- TINH VÂN NỀN (NEBULA) ---
         function createNebulaTexture() {
             const canvasNebula = document.createElement('canvas');
-            canvasNebula.width = 512;
-            canvasNebula.height = 512;
+            canvasNebula.width = 256;
+            canvasNebula.height = 256;
             const ctxN = canvasNebula.getContext('2d');
-            
-            const grad = ctxN.createRadialGradient(256, 256, 10, 256, 256, 256);
+            const grad = ctxN.createRadialGradient(128, 128, 5, 128, 128, 128);
             grad.addColorStop(0, 'rgba(255, 42, 109, 0.35)');  
             grad.addColorStop(0.4, 'rgba(120, 30, 200, 0.18)'); 
-            grad.addColorStop(0.7, 'rgba(30, 80, 220, 0.06)');  
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            
             ctxN.fillStyle = grad;
-            ctxN.fillRect(0, 0, 512, 512);
+            ctxN.fillRect(0, 0, 256, 256);
             return new THREE.CanvasTexture(canvasNebula);
         }
 
@@ -288,32 +412,28 @@
         const nebulaGeo = new THREE.PlaneGeometry(900, 900);
         const nebulaTex = createNebulaTexture();
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 4; i++) {
             const nebulaMat = new THREE.MeshBasicMaterial({
-                map: nebulaTex,
-                transparent: true,
-                opacity: 0.5,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                side: THREE.DoubleSide
+                map: nebulaTex, transparent: true, opacity: 0.4,
+                blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
             });
             const nebulaMesh = new THREE.Mesh(nebulaGeo, nebulaMat);
-            nebulaMesh.position.set((Math.random() - 0.5) * 300, (Math.random() - 0.5) * 300, -400 - i * 80);
+            nebulaMesh.position.set((Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200, -400 - i * 80);
             nebulaMesh.rotation.z = Math.random() * Math.PI * 2;
-            nebulaMesh.userData = { rotSpeed: (Math.random() - 0.5) * 0.015 };
+            nebulaMesh.userData = { rotSpeed: (Math.random() - 0.5) * 0.01 };
             nebulaGroup.add(nebulaMesh);
         }
 
-        // --- 3. Tạo Hố Trung Tâm ---
+        // --- 3. Tạo Hố Đen Trung Tâm ---
         const blackHoleGroup = new THREE.Group();
         scene.add(blackHoleGroup);
 
-        const singularityGeo = new THREE.SphereGeometry(16, 48, 48); 
+        const singularityGeo = new THREE.SphereGeometry(16, 32, 32); 
         const singularityMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
         const singularity = new THREE.Mesh(singularityGeo, singularityMat);
         blackHoleGroup.add(singularity);
 
-        const diskCount = 6000; 
+        const diskCount = window.innerWidth < 600 ? 3000 : 6000; 
         const diskGeometry = new THREE.BufferGeometry();
         const diskPositions = new Float32Array(diskCount * 3);
         const diskColors = new Float32Array(diskCount * 3);
@@ -342,90 +462,57 @@
         diskGeometry.setAttribute('color', new THREE.BufferAttribute(diskColors, 3));
 
         const diskMaterial = new THREE.PointsMaterial({
-            size: 0.7,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.85,
-            blending: THREE.AdditiveBlending 
+            size: 0.8, vertexColors: true, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending 
         });
         const accretionDisk = new THREE.Points(diskGeometry, diskMaterial);
         blackHoleGroup.add(accretionDisk);
 
-        // --- 4. Khởi Tạo Dữ Liệu Lời Chúc và Hình Ảnh ---
+        // --- 4. Khởi Tạo Dữ Liệu Hình Ảnh & Lời Chúc ---
         const rawContents = [
-            { type: 'text', value: 'Happy Birthday!🎉' },
-            { type: 'text', value: 'Chúc Yến snvv!✨' },
-            { type: 'text', value: 'Tuổi mới hạnh phúc!🍰' },
-            { type: 'text', value: 'Xinh đẹp tuyệt vời!🐷' },
+            { type: 'text', value: 'Happy Birthday!' },
+            { type: 'text', value: 'Chúc Yến sinh nhật vui vẻ!' },
+            { type: 'text', value: 'Tuổi mới hạnh phúc!' },
+            { type: 'text', value: 'Xinh đẹp tuyệt vời!' },
             { type: 'text', value: 'Luôn luôn học giỏi!' },
             { type: 'text', value: '22/07/2009' },
             { type: 'text', value: 'Nguyễn Thị Hải Yến' },
-            { type: 'text', value: 'Chúc Yến snvv!✨' },
-            { type: 'text', value: 'Tuổi mới hạnh phúc!🍰' },
-            { type: 'text', value: 'Happy Birthday!🎉' },
-            { type: 'text', value: 'Xinh đẹp tuyệt vời!🐷' },
-            { type: 'text', value: '22/07/2009' },
-            { type: 'text', value: 'Nguyễn Thị Hải Yến' }
+            { type: 'text', value: '✨' }, { type: 'text', value: '🍰' },
+            { type: 'text', value: '🎉' }, { type: 'text', value: '🐷' }
         ];
 
         const danhSachAnhCuaToi = [
-            'https://files.catbox.moe/za5ty6.jpg',
-            'https://files.catbox.moe/cilbyx.jpg',
-            'https://files.catbox.moe/p7k33i.jpg',
-            'https://files.catbox.moe/lc40y4.jpg',
-            'https://files.catbox.moe/aoc2rs.jpg',
-            'https://files.catbox.moe/9dja6y.jpg',
-            'https://files.catbox.moe/fss2rs.jpg',
-            'https://files.catbox.moe/jfw9vm.jpg',
-            'https://files.catbox.moe/o02w5t.jpg',
-            'https://files.catbox.moe/azm47o.jpg',
-            'https://files.catbox.moe/61zdyb.jpg',
-            'https://files.catbox.moe/toybma.jpg',
-            'https://files.catbox.moe/9fccqx.jpg',
-            'https://files.catbox.moe/8bbsae.jpg',
-            'https://files.catbox.moe/7fs5h1.jpg',
-            'https://files.catbox.moe/x293m5.jpg',
-            'https://files.catbox.moe/pe6szs.jpg',
-            'https://files.catbox.moe/hi4yig.jpg',
-            'https://files.catbox.moe/ztairk.jpg',
-            'https://files.catbox.moe/yu15pn.jpg',
-            'https://files.catbox.moe/e8qv0j.jpg',
-            'https://files.catbox.moe/x2o84c.jpg',
-            'https://files.catbox.moe/4adc72.jpg',
-            'https://files.catbox.moe/y3jaf0.jpg',
-            'https://files.catbox.moe/47xjfr.jpg',
-            'https://files.catbox.moe/um65pt.jpg',
-            'https://files.catbox.moe/t76qfu.jpg',
-            'https://files.catbox.moe/1y27pu.jpg',
-            'https://files.catbox.moe/xtv0em.jpg',
-            'https://files.catbox.moe/cwb1p2.jpg',
-            'https://files.catbox.moe/720noe.jpg',
-            'https://files.catbox.moe/j9l14f.jpg',
-            'https://files.catbox.moe/5fvnt4.jpg',
-            'https://files.catbox.moe/unjjgs.jpg',
-            'https://files.catbox.moe/zptvdt.jpg',
-            'https://files.catbox.moe/p3ux0n.jpg',
-            'https://files.catbox.moe/mys33n.jpg',
-            'https://files.catbox.moe/8tzz5s.jpg',
-            'https://files.catbox.moe/bwnyz1.jpg',
-            'https://files.catbox.moe/fdfz77.jpg',
-            'https://files.catbox.moe/4t2laz.jpg',
-            'https://files.catbox.moe/d7oaax.jpg',
-            'https://files.catbox.moe/6dn8p4.jpg',
-            'https://files.catbox.moe/mdqp4b.jpg',
-            'https://files.catbox.moe/a0qwlt.jpg',
-            'https://files.catbox.moe/ecw592.jpg',
-            'https://files.catbox.moe/d52g47.jpg',
-            'https://files.catbox.moe/scyjwl.jpg',
-            'https://files.catbox.moe/ks66u5.jpg',
-            'https://files.catbox.moe/q95fug.jpg'
+            'https://files.catbox.moe/za5ty6.jpg', 'https://files.catbox.moe/cilbyx.jpg',
+            'https://files.catbox.moe/p7k33i.jpg', 'https://files.catbox.moe/lc40y4.jpg',
+            'https://files.catbox.moe/aoc2rs.jpg', 'https://files.catbox.moe/9dja6y.jpg',
+            'https://files.catbox.moe/fss2rs.jpg', 'https://files.catbox.moe/jfw9vm.jpg',
+            'https://files.catbox.moe/o02w5t.jpg', 'https://files.catbox.moe/azm47o.jpg',
+            'https://files.catbox.moe/61zdyb.jpg', 'https://files.catbox.moe/toybma.jpg',
+            'https://files.catbox.moe/9fccqx.jpg', 'https://files.catbox.moe/8bbsae.jpg',
+            'https://files.catbox.moe/7fs5h1.jpg', 'https://files.catbox.moe/x293m5.jpg',
+            'https://files.catbox.moe/pe6szs.jpg', 'https://files.catbox.moe/hi4yig.jpg',
+            'https://files.catbox.moe/ztairk.jpg', 'https://files.catbox.moe/yu15pn.jpg',
+            'https://files.catbox.moe/e8qv0j.jpg', 'https://files.catbox.moe/x2o84c.jpg',
+            'https://files.catbox.moe/4adc72.jpg', 'https://files.catbox.moe/y3jaf0.jpg',
+            'https://files.catbox.moe/47xjfr.jpg', 'https://files.catbox.moe/um65pt.jpg',
+            'https://files.catbox.moe/t76qfu.jpg', 'https://files.catbox.moe/1y27pu.jpg',
+            'https://files.catbox.moe/xtv0em.jpg', 'https://files.catbox.moe/cwb1p2.jpg',
+            'https://files.catbox.moe/720noe.jpg', 'https://files.catbox.moe/j9l14f.jpg',
+            'https://files.catbox.moe/5fvnt4.jpg', 'https://files.catbox.moe/unjjgs.jpg',
+            'https://files.catbox.moe/zptvdt.jpg', 'https://files.catbox.moe/p3ux0n.jpg',
+            'https://files.catbox.moe/mys33n.jpg', 'https://files.catbox.moe/8tzz5s.jpg',
+            'https://files.catbox.moe/bwnyz1.jpg', 'https://files.catbox.moe/fdfz77.jpg',
+            'https://files.catbox.moe/4t2laz.jpg', 'https://files.catbox.moe/d7oaax.jpg',
+            'https://files.catbox.moe/6dn8p4.jpg', 'https://files.catbox.moe/mdqp4b.jpg',
+            'https://files.catbox.moe/a0qwlt.jpg', 'https://files.catbox.moe/ecw592.jpg',
+            'https://files.catbox.moe/d52g47.jpg', 'https://files.catbox.moe/scyjwl.jpg',
+            'https://files.catbox.moe/ks66u5.jpg', 'https://files.catbox.moe/q95fug.jpg'
         ];
 
         danhSachAnhCuaToi.forEach(linkAnh => {
             rawContents.push({ type: 'image', value: linkAnh });
         });
 
-        const targetTotalObjects = 110; 
+        const targetTotalObjects = window.innerWidth < 600 ? 65 : 110; 
         let contents = [];
         while (contents.length < targetTotalObjects) {
             contents = [...contents, ...rawContents];
@@ -442,60 +529,44 @@
 
         function createRoundedImageTexture(imageUrl) {
             if (textureCache[imageUrl]) return textureCache[imageUrl];
-
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+            const canvasImg = document.createElement('canvas');
+            const ctx = canvasImg.getContext('2d');
             const size = 512;
-            canvas.width = size;
-            canvas.height = size;
+            canvasImg.width = size;
+            canvasImg.height = size;
             
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.src = imageUrl;
             
-            const texture = new THREE.CanvasTexture(canvas);
-            
+            const texture = new THREE.CanvasTexture(canvasImg);
             img.onload = function() {
                 ctx.clearRect(0, 0, size, size);
                 const radius = 60;
                 ctx.beginPath();
-                ctx.moveTo(radius, 0);
-                ctx.lineTo(size - radius, 0);
-                ctx.quadraticCurveTo(size, 0, size, radius);
-                ctx.lineTo(size, size - radius);
-                ctx.quadraticCurveTo(size, size, size - radius, size);
-                ctx.lineTo(radius, size);
-                ctx.quadraticCurveTo(0, size, 0, size - radius);
-                ctx.lineTo(0, radius);
-                ctx.quadraticCurveTo(0, 0, radius, 0);
-                ctx.closePath();
-                
+                ctx.moveTo(radius, 0); ctx.lineTo(size - radius, 0); ctx.quadraticCurveTo(size, 0, size, radius);
+                ctx.lineTo(size, size - radius); ctx.quadraticCurveTo(size, size, size - radius, size);
+                ctx.lineTo(radius, size); ctx.quadraticCurveTo(0, size, 0, size - radius);
+                ctx.lineTo(0, radius); ctx.quadraticCurveTo(0, 0, radius, 0); ctx.closePath();
                 ctx.clip();
                 ctx.drawImage(img, 0, 0, size, size);
                 texture.needsUpdate = true;
             };
-            
             textureCache[imageUrl] = texture;
             return texture;
         }
 
         function createTextTexture(text) {
             if (textureCache['text_' + text]) return textureCache['text_' + text];
-
             const canvasText = document.createElement('canvas');
             const ctxText = canvasText.getContext('2d');
-            canvasText.width = 512;
-            canvasText.height = 128;
-            
-            ctxText.fillStyle = 'rgba(0,0,0,0)';
-            ctxText.fillRect(0, 0, canvasText.width, canvasText.height);
-            
-            ctxText.font = 'Bold 42px Arial'; 
+            canvasText.width = 512; canvasText.height = 128;
+            ctxText.font = 'Bold 40px Arial'; 
             ctxText.fillStyle = '#ffffff';
             ctxText.textAlign = 'center';
             ctxText.shadowColor = '#ff69b4';
-            ctxText.shadowBlur = 15;
-            ctxText.fillText(text, 256, 70);
+            ctxText.shadowBlur = 12;
+            ctxText.fillText(text, 256, 75);
             
             const texture = new THREE.CanvasTexture(canvasText);
             textureCache['text_' + text] = texture;
@@ -504,46 +575,42 @@
 
         // --- Hệ thống Pháo hoa 3D ---
         const fireworks = [];
+        const maxFireworksParticles = 400; 
         const fireworkGeometry = new THREE.BufferGeometry();
-        const fireworkPositions = new Float32Array(300 * 3);
-        const fireworkColors = new Float32Array(300 * 3);
-        const fireworkOpacities = new Float32Array(300);
+        const fireworkPositions = new Float32Array(maxFireworksParticles * 3);
+        const fireworkColors = new Float32Array(maxFireworksParticles * 3);
+        const fireworkOpacities = new Float32Array(maxFireworksParticles);
         
         fireworkGeometry.setAttribute('position', new THREE.BufferAttribute(fireworkPositions, 3));
         fireworkGeometry.setAttribute('color', new THREE.BufferAttribute(fireworkColors, 3));
         fireworkGeometry.setAttribute('opacity', new THREE.BufferAttribute(fireworkOpacities, 1));
         
         const fireworkMaterial = new THREE.PointsMaterial({
-            size: 1.2,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
+            size: 2.0, vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending
         });
-        
         const fireworkSystem = new THREE.Points(fireworkGeometry, fireworkMaterial);
         scene.add(fireworkSystem);
         
         function createFirework(position) {
             const colors = [0xff69b4, 0xff2a6d, 0xff8ebb, 0xffffff, 0xffd700];
-            const particleCount = 30;
-            
+            const particleCount = 20;
             for (let i = 0; i < particleCount; i++) {
-                if (fireworks.length >= 300) break;
-                
+                if (fireworks.length >= maxFireworksParticles) break;
                 const angle = Math.random() * Math.PI * 2;
-                const speed = 0.5 + Math.random() * 1.5;
+                const elevation = (Math.random() - 0.5) * Math.PI;
+                const speed = 0.8 + Math.random() * 1.5;
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 
+                const velocity = new THREE.Vector3(
+                    Math.cos(angle) * Math.cos(elevation) * speed,
+                    Math.sin(elevation) * speed,
+                    Math.sin(angle) * Math.cos(elevation) * speed
+                );
+
                 fireworks.push({
                     position: position.clone(),
-                    velocity: new THREE.Vector3(
-                        Math.cos(angle) * speed,
-                        (Math.random() - 0.5) * speed,
-                        Math.sin(angle) * speed
-                    ),
-                    life: 1.0,
-                    color: new THREE.Color(color)
+                    velocity: velocity,
+                    life: 1.0, color: new THREE.Color(color)
                 });
             }
         }
@@ -551,112 +618,105 @@
         function updateFireworks() {
             for (let i = 0; i < fireworks.length; i++) {
                 const fw = fireworks[i];
-                fw.life -= 0.015;
+                fw.life -= 0.02;
                 fw.position.add(fw.velocity);
-                fw.velocity.multiplyScalar(0.98);
-                
                 if (fw.life <= 0) {
-                    fireworks.splice(i, 1);
-                    i--;
-                    continue;
+                    fireworks.splice(i, 1); i--; continue;
                 }
-                
                 fireworkPositions[i * 3] = fw.position.x;
                 fireworkPositions[i * 3 + 1] = fw.position.y;
                 fireworkPositions[i * 3 + 2] = fw.position.z;
-                
                 fireworkColors[i * 3] = fw.color.r;
                 fireworkColors[i * 3 + 1] = fw.color.g;
                 fireworkColors[i * 3 + 2] = fw.color.b;
-                
                 fireworkOpacities[i] = fw.life;
             }
-            
-            for (let i = fireworks.length; i < 300; i++) {
-                fireworkPositions[i * 3] = 0;
-                fireworkPositions[i * 3 + 1] = 0;
-                fireworkPositions[i * 3 + 2] = 0;
+            for (let i = fireworks.length; i < maxFireworksParticles; i++) {
                 fireworkOpacities[i] = 0;
             }
-            
             fireworkGeometry.attributes.position.needsUpdate = true;
             fireworkGeometry.attributes.color.needsUpdate = true;
-            fireworkGeometry.attributes.opacity.needsUpdate = true;
         }
 
         function resetItemPosition(mesh, isFirstTime = false) {
             const angle = Math.random() * Math.PI * 2;
-            const distance = isFirstTime ? (20 + Math.random() * 450) : (16 + Math.random() * 5); 
             
-            mesh.position.x = Math.cos(angle) * distance;
-            mesh.position.y = isFirstTime ? (Math.random() - 0.5) * 280 : (Math.random() - 0.5) * 30; 
-            mesh.position.z = Math.sin(angle) * distance;
-            
-            if (!isFirstTime) {
+            if (isFirstTime) {
+                const distance = 20 + Math.random() * 450;
+                mesh.position.x = Math.cos(angle) * distance;
+                mesh.position.y = (Math.random() - 0.5) * 200;
+                mesh.position.z = Math.sin(angle) * distance;
+                mesh.scale.set(1, 1, 1);
+            } else {
+                const distance = 16 + Math.random() * 5; 
+                mesh.position.x = Math.cos(angle) * distance;
+                mesh.position.y = (Math.random() - 0.5) * 10;
+                mesh.position.z = Math.sin(angle) * distance;
                 mesh.scale.set(0, 0, 0);
             }
         }
 
-        // --- ĐÃ PHỤC HỒI VỀ 2D PLANE (KHÔNG KHỐI HỘP - KHÔNG VIỀN NEON) ---
+        // Khởi tạo các khối bay
         contents.forEach((data, index) => {
-            let geometry;
-            let material;
-
+            let geometry, material;
             if (data.type === 'text') {
-                const textTexture = createTextTexture(data.value);
-                geometry = new THREE.PlaneGeometry(72, 18); 
-                material = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true, side: THREE.DoubleSide });
+                geometry = new THREE.PlaneGeometry(64, 16); 
+                material = new THREE.MeshBasicMaterial({ map: createTextTexture(data.value), transparent: true, side: THREE.DoubleSide });
             } else {
-                const imgTexture = createRoundedImageTexture(data.value);
-                geometry = new THREE.PlaneGeometry(28, 28); 
-                material = new THREE.MeshBasicMaterial({ map: imgTexture, transparent: true, side: THREE.DoubleSide });
+                geometry = new THREE.PlaneGeometry(26, 26); 
+                material = new THREE.MeshBasicMaterial({ map: createRoundedImageTexture(data.value), transparent: true, side: THREE.DoubleSide });
             }
-
             const mesh = new THREE.Mesh(geometry, material);
             resetItemPosition(mesh, true); 
-
-            mesh.userData = {
-                speed: 0.25 + Math.random() * 0.35, 
-                delay: index * 8 
-            };
-
+            mesh.userData = { speed: 0.3 + Math.random() * 0.4, delay: index * 6 };
             scene.add(mesh);
             floatingItems.push(mesh);
         });
 
-        // --- Raycaster & Tương tác chuột ---
+        // --- 5. Bộ tương thích Phóng to/Thu nhỏ (Tối ưu với GSAP) ---
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         let selectedItem = null;
         let originalCameraPos = null;
         let isZoomed = false;
-        
-        let mouseWorldPos = new THREE.Vector3();
-        let mousePlane = new THREE.Plane();
-        
-        function onMouseMove(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            raycaster.setFromCamera(mouse, camera);
-            
-            const cameraDirection = new THREE.Vector3();
-            camera.getWorldDirection(cameraDirection);
-            mousePlane.setFromNormalAndCoplanarPoint(cameraDirection.clone().negate(), new THREE.Vector3(0, 0, 0));
-            raycaster.ray.intersectPlane(mousePlane, mouseWorldPos);
-        }
-        
-        window.addEventListener('mousemove', onMouseMove);
+        let touchStartX = 0, touchStartY = 0;
 
-        function onMouseClick(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        window.addEventListener('touchstart', (e) => {
+            if(e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length === 1) {
+                const diffX = Math.abs(e.changedTouches[0].clientX - touchStartX);
+                const diffY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+                if (diffX < 8 && diffY < 8) {
+                    executeInteraction(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                }
+            }
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.clientX !== undefined) {
+                executeInteraction(e.clientX, e.clientY);
+            }
+        });
+
+        function executeInteraction(clientX, clientY) {
+            if (splashScreen.style.display !== 'none') return; // Chặn tương tác khi chưa bấm mở quà
+            if (clientX > window.innerWidth - 300 && clientY < 80) return; // Chặn khu vực cụm nút UI điều khiển
+
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(floatingItems);
 
             if (intersects.length > 0) {
                 const clickedItem = intersects[0].object;
+                if (!clickedItem.visible) return;
                 
                 if (!isZoomed) {
                     selectedItem = clickedItem;
@@ -664,55 +724,142 @@
                     selectedItem.userData.originalSpeed = selectedItem.userData.speed;
                     selectedItem.userData.speed = 0; 
                     
-                    controls.enabled = false;
+                    controls.enabled = false; 
                     
-                    const targetPos = clickedItem.position.clone().add(new THREE.Vector3(0, 0, 60));
-                    camera.position.copy(targetPos);
-                    camera.lookAt(clickedItem.position);
+                    const zoomDistance = window.innerWidth < 600 ? 55 : 45;
+                    const targetPos = clickedItem.position.clone().add(
+                        new THREE.Vector3(0, 0, zoomDistance).applyQuaternion(camera.quaternion)
+                    );
+
+                    gsap.timeline({
+                        onComplete: () => {
+                            camera.lookAt(clickedItem.position);
+                        }
+                    })
+                    .to(camera.position, {
+                        x: targetPos.x,
+                        y: targetPos.y,
+                        z: targetPos.z,
+                        duration: 1.2,
+                        ease: "power2.inOut"
+                    }, 0)
+                    .to(controls.target, {
+                        x: clickedItem.position.x,
+                        y: clickedItem.position.y,
+                        z: clickedItem.position.z,
+                        duration: 1.2,
+                        ease: "power2.inOut"
+                    }, 0)
+                    .to(selectedItem.scale, {
+                        x: 1.5,
+                        y: 1.5,
+                        z: 1.5,
+                        duration: 0.8,
+                        ease: "back.out(1.7)"
+                    }, 0.3);
                     
-                    selectedItem.scale.set(2, 2, 2);
                     isZoomed = true;
                 } else if (selectedItem === clickedItem) {
-                    selectedItem.userData.speed = selectedItem.userData.originalSpeed;
-                    selectedItem.scale.set(1, 1, 1);
-                    
-                    if (originalCameraPos) {
-                        camera.position.copy(originalCameraPos);
-                    }
-                    
-                    controls.enabled = true; 
-                    controls.target.set(0, 0, 0);
-                    
-                    selectedItem = null;
-                    isZoomed = false;
+                    closeZoom();
                 }
             } else if (isZoomed) {
-                if (selectedItem) {
-                    selectedItem.userData.speed = selectedItem.userData.originalSpeed;
-                    selectedItem.scale.set(1, 1, 1);
-                }
-                
-                if (originalCameraPos) {
-                    camera.position.copy(originalCameraPos);
-                }
-                
-                controls.enabled = true;
-                controls.target.set(0, 0, 0);
-                
-                selectedItem = null;
-                isZoomed = false;
+                closeZoom();
             }
         }
 
-        window.addEventListener('click', onMouseClick);
+        function closeZoom() {
+            if (!selectedItem) return;
 
-        // --- 5. Hàm Vòng Lặp Hoạt Họa ---
+            controls.enabled = true; 
+
+            const localItem = selectedItem;
+            gsap.to(localItem.scale, {
+                x: 1,
+                y: 1,
+                z: 1,
+                duration: 0.5,
+                ease: "power2.out",
+                onComplete: () => {
+                    localItem.userData.speed = localItem.userData.originalSpeed;
+                }
+            });
+
+            if (originalCameraPos) {
+                gsap.timeline()
+                .to(camera.position, {
+                    x: originalCameraPos.x,
+                    y: originalCameraPos.y,
+                    z: originalCameraPos.z,
+                    duration: 1.0,
+                    ease: "power2.inOut"
+                }, 0)
+                .to(controls.target, {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                    duration: 1.0,
+                    ease: "power2.inOut"
+                }, 0);
+            }
+
+            selectedItem = null;
+            isZoomed = false;
+        }
+
+        // --- 6. Logic Hàm Thay Đổi Theme Màu Động ---
+        function applyTheme(themeKey) {
+            const theme = themes[themeKey];
+            if (!theme) return;
+
+            // 1. Màu bầu trời sao
+            starsMaterial.color.set(theme.star);
+
+            // 2. Màu Đĩa bồi tụ hố đen trung tâm
+            const positions = accretionDisk.geometry.attributes.position.array;
+            const colors = accretionDisk.geometry.attributes.color.array;
+            const colorInner = new THREE.Color(theme.inner);
+            const colorOuter = new THREE.Color(theme.outer);
+
+            for (let i = 0; i < diskCount; i++) {
+                const x = positions[i * 3];
+                const z = positions[i * 3 + 2];
+                const radius = Math.sqrt(x*x + z*z);
+                
+                const mixedColor = colorInner.clone().lerp(colorOuter, (radius - 18) / 35);
+                colors[i * 3] = mixedColor.r;
+                colors[i * 3 + 1] = mixedColor.g;
+                colors[i * 3 + 2] = mixedColor.b;
+            }
+            accretionDisk.geometry.attributes.color.needsUpdate = true;
+
+            // 3. Làm mới Canvas mây Tinh vân nền
+            nebulaGroup.children.forEach(cloud => {
+                const canvasN = document.createElement('canvas');
+                canvasN.width = 256; canvasN.height = 256;
+                const ctxN = canvasN.getContext('2d');
+                const grad = ctxN.createRadialGradient(128, 128, 5, 128, 128, 128);
+                grad.addColorStop(0, theme.nebula);
+                grad.addColorStop(0.4, theme.nebula.replace('0.35', '0.15')); 
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctxN.fillStyle = grad;
+                ctxN.fillRect(0, 0, 256, 256);
+                
+                cloud.material.map.dispose(); 
+                cloud.material.map = new THREE.CanvasTexture(canvasN);
+                cloud.material.needsUpdate = true;
+            });
+        }
+
+        themeSelect.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
+
+        // --- 7. VÒNG LẶP HOẠT HỌA ---
         const clock = new THREE.Clock();
         const maxTravelDistance = 500; 
 
         function animate() {
             requestAnimationFrame(animate);
-
             const elapsedTime = clock.getElapsedTime();
 
             accretionDisk.rotation.y = elapsedTime * -1.0; 
@@ -729,67 +876,48 @@
                     return;
                 }
                 item.visible = true;
-
-                item.lookAt(camera.position);
+                
+                if (item !== selectedItem) {
+                    item.lookAt(camera.position);
+                }
 
                 const distanceToCenter = item.position.length();
 
                 if (distanceToCenter < maxTravelDistance) {
-                    const direction = item.position.clone().normalize();
-                    if(direction.length() === 0) direction.set(1, 0, 0); 
+                    const directionOut = item.position.clone().normalize();
+                    if(directionOut.length() === 0) directionOut.set(1, 0, 0); 
                     
-                    item.position.add(direction.multiplyScalar(item.userData.speed));
-                    
-                    const distanceToMouse = item.position.distanceTo(mouseWorldPos);
-                    if (distanceToMouse < 80 && distanceToMouse > 0 && !isZoomed) {
-                        const pushDirection = item.position.clone().sub(mouseWorldPos).normalize();
-                        const pushStrength = (80 - distanceToMouse) * 0.02;
-                        item.position.add(pushDirection.multiplyScalar(pushStrength));
-                    }
-                    
-                    item.position.y += Math.sin(elapsedTime * 2 + distanceToCenter * 0.05) * 0.15;
+                    item.position.add(directionOut.multiplyScalar(item.userData.speed));
+                    item.position.y += Math.sin(elapsedTime * 2 + distanceToCenter * 0.05) * 0.12;
 
-                    if (distanceToCenter < 120) {
-                        const scaleFactor = (distanceToCenter - 16) / 104; 
-                        const clampedScale = Math.max(0, Math.min(1, scaleFactor));
-                        item.scale.set(clampedScale, clampedScale, clampedScale);
-                    } else if (distanceToCenter > maxTravelDistance - 80) {
-                        const scaleFactor = (maxTravelDistance - distanceToCenter) / 80;
-                        const clampedScale = Math.max(0, Math.min(1, scaleFactor));
-                        item.scale.set(clampedScale, clampedScale, clampedScale);
-                    } else if (!isZoomed || item !== selectedItem) {
-                        item.scale.set(1, 1, 1);
+                    // Tăng kích thước dần từ 0 lên 1 khi bắt đầu bay ra khỏi tâm hố đen
+                    if (item !== selectedItem && item.scale.x < 1) {
+                        const progress = Math.min(1, (distanceToCenter - 16) / 40);
+                        item.scale.set(progress, progress, progress);
                     }
                 } else {
-                    createFirework(item.position.clone());
-                    resetItemPosition(item);
+                    // Tạo pháo hoa tại vị trí biến mất và đưa phần tử quay lại tâm hố đen
+                    createFirework(item.position);
+                    resetItemPosition(item, false);
                 }
             });
 
             updateFireworks();
-
-            if (!isZoomed) {
-                controls.update();
-            }
-            
+            controls.update();
             composer.render();
         }
 
-        animate();
-
-        // --- 6. Định Dạng Lại Khi Thay Đổi Kích Thước Màn Hình ---
+        // --- 8. Xử lý Tương thích Kích thước Màn hình (Resize) ---
         window.addEventListener('resize', () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            
-            camera.aspect = width / height;
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            
-            renderer.setSize(width, height);
-            composer.setSize(width, height);
-            
-            lensingPass.uniforms.uAspect.value = width / height;
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+            lensingPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
         });
+
+        // Bắt đầu vòng lặp hoạt họa
+        animate();
     </script>
 </body>
 </html>
