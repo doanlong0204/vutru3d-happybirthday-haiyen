@@ -43,7 +43,79 @@
             color: rgba(255, 255, 255, 0.95);
             text-shadow: 0 0 8px rgba(255, 42, 109, 0.6);
         }
+        .tour-caption {
+            position: absolute;
+            left: 50%;
+            top: 72%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            max-width: min(640px, 82vw);
+            color: #fff;
+            font-size: clamp(1.1rem, 3vw, 2.4rem);
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-align: center;
+            text-shadow: 0 0 18px var(--hud-accent), 0 0 42px rgba(255,255,255,0.35);
+            opacity: 0;
+            pointer-events: none;
+        }
         
+        :root {
+            --hud-accent: #ff2a6d;
+            --hud-accent-soft: rgba(255, 42, 109, 0.24);
+        }
+
+        /* Hamburger Menu Button */
+        .hamburger-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 110;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, rgba(12, 20, 35, 0.32), rgba(255, 255, 255, 0.06));
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.45), inset 0 0 28px rgba(255, 255, 255, 0.05);
+            outline: none;
+            border: none;
+        }
+
+        .hamburger-btn:hover {
+            border-color: rgba(255, 255, 255, 0.42);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), var(--hud-accent-soft));
+            box-shadow: 0 0 24px var(--hud-accent-soft), inset 0 0 20px rgba(255,255,255,0.08);
+        }
+
+        .hamburger-line {
+            width: 22px;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(10px, 10px);
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
         .music-box {
             position: absolute;
             top: 15px;
@@ -52,38 +124,133 @@
             display: flex;
             gap: 8px;
             align-items: center;
+            padding: 8px;
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(12, 20, 35, 0.32), rgba(255, 255, 255, 0.06));
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.45), inset 0 0 28px rgba(255, 255, 255, 0.05);
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
         }
-        .music-control, .music-select, .theme-select {
-            background: rgba(255, 42, 109, 0.15);
-            border: 1px solid rgba(255, 42, 109, 0.6);
+
+        .music-box.show {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .music-box::before {
+            content: "";
+            position: absolute;
+            inset: 1px;
+            border-radius: 21px;
+            pointer-events: none;
+            background: linear-gradient(110deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02), var(--hud-accent-soft));
+            opacity: 0.65;
+        }
+        .native-select {
+            display: none;
+        }
+        .music-control, .custom-select-trigger, .auto-tour {
+            position: relative;
+            min-height: 44px;
+            background: rgba(255, 255, 255, 0.075);
+            border: 0.5px solid rgba(255, 255, 255, 0.22);
             color: #ffffff;
             padding: 12px 16px;
-            border-radius: 24px;
+            border-radius: 14px;
             cursor: pointer;
-            font-size: 0.9rem;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            font-size: 0.78rem;
+            font-family: 'Orbitron', 'Rajdhani', 'Arial Narrow', Arial, sans-serif;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(255, 42, 109, 0.3);
-            font-weight: bold;
+            box-shadow: inset 0 0 18px rgba(255,255,255,0.04), 0 0 16px rgba(255, 42, 109, 0.18);
+            font-weight: 700;
             outline: none;
         }
-        .theme-select {
-            background: rgba(5, 217, 232, 0.15);
-            border: 1px solid rgba(5, 217, 232, 0.6);
-            box-shadow: 0 0 10px rgba(5, 217, 232, 0.3);
+        .music-control:hover, .custom-select-trigger:hover, .auto-tour:hover,
+        .custom-select.open .custom-select-trigger, .auto-tour.active {
+            border-color: rgba(255, 255, 255, 0.42);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), var(--hud-accent-soft));
+            box-shadow: 0 0 24px var(--hud-accent-soft), inset 0 0 20px rgba(255,255,255,0.08);
         }
-        .music-select {
-            padding-right: 32px;
-            appearance: none; 
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23fff'><polygon points='0,0 10,0 5,5'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
+        .custom-select {
+            position: relative;
         }
-        .music-select option, .theme-select option {
-            background: #120107;
+        .custom-select-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-width: 168px;
+        }
+        .custom-select-trigger::after {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-right: 1.5px solid #fff;
+            border-bottom: 1.5px solid #fff;
+            transform: rotate(45deg) translateY(-2px);
+            opacity: 0.78;
+            transition: transform 0.25s ease;
+        }
+        .custom-select.open .custom-select-trigger::after {
+            transform: rotate(225deg) translateY(-2px);
+        }
+        .custom-options {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            min-width: 220px;
+            max-height: 310px;
+            overflow-y: auto;
+            padding: 8px;
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            background: rgba(5, 8, 18, 0.74);
+            backdrop-filter: blur(22px) saturate(160%);
+            -webkit-backdrop-filter: blur(22px) saturate(160%);
+            box-shadow: 0 18px 48px rgba(0,0,0,0.55), 0 0 28px var(--hud-accent-soft);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-8px) scale(0.98);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        .custom-select.open .custom-options {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .custom-option {
+            display: block;
+            width: 100%;
+            color: rgba(255,255,255,0.86);
+            background: transparent;
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 12px;
+            text-align: left;
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.76rem;
+            letter-spacing: 1px;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+        .custom-option:hover, .custom-option.active {
             color: #fff;
+            background: linear-gradient(90deg, var(--hud-accent-soft), rgba(255,255,255,0.08));
+            transform: translateX(3px);
+        }
+        .auto-tour.active {
+            color: #fff;
+            text-shadow: 0 0 10px var(--hud-accent);
         }
         
         /* CSS cho Màn hình chào mừng */
@@ -146,16 +313,29 @@
             .music-box {
                 top: 10px;
                 right: 10px;
-                left: 10px;
+                left: auto;
                 justify-content: space-between;
                 gap: 5px;
+                flex-wrap: wrap;
+                border-radius: 18px;
+                width: 90%;
+                max-width: 340px;
             }
-            .music-select, .theme-select, .music-control {
+            .custom-select, .music-control, .auto-tour {
+                flex: 1 1 31%;
+            }
+            .custom-select-trigger, .music-control, .auto-tour {
                 padding: 10px 12px;
-                font-size: 0.75rem;
+                min-width: 0;
+                width: 100%;
+                font-size: 0.66rem;
             }
-            .music-select { max-width: 35%; padding-right: 22px; }
-            .theme-select { max-width: 40%; }
+            .custom-options {
+                left: 0;
+                right: auto;
+                min-width: min(84vw, 260px);
+                z-index: 150;
+            }
             .instructions {
                 font-size: 0.75rem;
                 bottom: 15px;
@@ -185,8 +365,16 @@
 
     <div class="instructions">Xoay/Zoom không gian • Chạm ảnh để phóng to • <strong>Design by Đoàn Long</strong></div>
     
-    <div class="music-box">
-        <select class="theme-select" id="themeSelect">
+    <div class="tour-caption" id="tourCaption"></div>
+
+    <button class="hamburger-btn" id="hamburgerBtn" type="button">
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+    </button>
+
+    <div class="music-box" id="hudPanel">
+        <select class="native-select" id="themeSelect" aria-hidden="true" tabindex="-1">
             <option value="cyber">🌸 Hồng Mặc Định</option>
             <option value="emerald">💵 Xanh Lục Bảo</option>
             <option value="sapphire">💎 Xanh Dương Mờ</option>
@@ -195,8 +383,12 @@
             <option value="amethyst">🔮 Tím Thạch Anh</option>
             <option value="monochrome">☁️ Trắng Bụi</option>
         </select>
+        <div class="custom-select" data-select="themeSelect">
+            <button class="custom-select-trigger" type="button">THEME</button>
+            <div class="custom-options" role="listbox"></div>
+        </div>
 
-        <select class="music-select" id="musicSelect">
+        <select class="native-select" id="musicSelect" aria-hidden="true" tabindex="-1">
             <option value="https://files.catbox.moe/52suk6.mp3">🎵 Giai điệu 01</option>
             <option value="https://files.catbox.moe/0gu178.mp3">🎵 Giai điệu 02</option>
             <option value="https://files.catbox.moe/mu9bw3.mp3">🎵 Giai điệu 03</option>
@@ -208,6 +400,11 @@
             <option value="https://files.catbox.moe/rqs3mg.mp3">🎵 Giai điệu 09</option>
             <option value="https://files.catbox.moe/enzj1a.mp3">🎵 Đặc Cầu 😈</option>
         </select>
+        <div class="custom-select" data-select="musicSelect">
+            <button class="custom-select-trigger" type="button">MUSIC</button>
+            <div class="custom-options" role="listbox"></div>
+        </div>
+        <button class="auto-tour" id="autoTourBtn" type="button">AUTO</button>
         <button class="music-control" id="musicBtn">🔇 Tắt</button>
     </div>
 
@@ -226,16 +423,97 @@
             monochrome: { inner: '#ffffff', outer: '#aaaaaa', star: '#ffffff', nebula: 'rgba(255, 255, 255, 0.2)' }
         };
 
+        // --- Xử lý Menu Hamburger ---
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const hudPanel = document.getElementById('hudPanel');
+
+        hamburgerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            hamburgerBtn.classList.toggle('active');
+            hudPanel.classList.toggle('show');
+        });
+
+        window.addEventListener('click', () => {
+            if (hudPanel.classList.contains('show')) {
+                hamburgerBtn.classList.remove('active');
+                hudPanel.classList.remove('show');
+            }
+        });
+
+        hudPanel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
         // --- Xử lý Nhạc nền & Màn hình chào mừng ---
         const bgMusic = document.getElementById('bgMusic');
         const musicBtn = document.getElementById('musicBtn');
         const musicSelect = document.getElementById('musicSelect');
         const themeSelect = document.getElementById('themeSelect');
+        const autoTourBtn = document.getElementById('autoTourBtn');
+        const tourCaption = document.getElementById('tourCaption');
         const startBtn = document.getElementById('startBtn');
         const splashScreen = document.getElementById('splashScreen');
         let isMusicPlaying = false;
+        let activeThemeKey = themeSelect.value;
+        let isAutoTour = false;
+        let autoTourTimer = null;
+        let autoTourTween = null;
 
         bgMusic.src = musicSelect.value;
+
+        function buildCustomSelects() {
+            document.querySelectorAll('.custom-select').forEach(customSelect => {
+                const select = document.getElementById(customSelect.dataset.select);
+                const trigger = customSelect.querySelector('.custom-select-trigger');
+                const optionBox = customSelect.querySelector('.custom-options');
+                if (!select || !trigger || !optionBox) return;
+
+                const syncLabel = () => {
+                    const selected = select.options[select.selectedIndex];
+                    trigger.textContent = selected ? selected.textContent.trim() : 'SELECT';
+                };
+
+                optionBox.innerHTML = '';
+                Array.from(select.options).forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'custom-option';
+                    button.textContent = option.textContent.trim();
+                    button.dataset.value = option.value;
+                    if (index === select.selectedIndex) button.classList.add('active');
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        select.value = option.value;
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                        customSelect.classList.remove('open');
+                    });
+                    optionBox.appendChild(button);
+                });
+
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.custom-select.open').forEach(openSelect => {
+                        if (openSelect !== customSelect) openSelect.classList.remove('open');
+                    });
+                    customSelect.classList.toggle('open');
+                });
+
+                select.addEventListener('change', () => {
+                    syncLabel();
+                    optionBox.querySelectorAll('.custom-option').forEach(button => {
+                        button.classList.toggle('active', button.dataset.value === select.value);
+                    });
+                });
+
+                syncLabel();
+            });
+
+            window.addEventListener('click', () => {
+                document.querySelectorAll('.custom-select.open').forEach(customSelect => customSelect.classList.remove('open'));
+            });
+        }
+
+        buildCustomSelects();
 
         startBtn.addEventListener('click', () => {
             bgMusic.play().then(() => {
@@ -249,7 +527,6 @@
                 onComplete: () => splashScreen.style.display = 'none'
             });
 
-            // Cú lướt camera cinematic từ không gian sâu bay vào trung tâm hố đen
             gsap.to(camera.position, {
                 x: 0,
                 y: 100,
@@ -306,6 +583,8 @@
             musicSelect.addEventListener(evt, (e) => e.stopPropagation());
             themeSelect.addEventListener(evt, (e) => e.stopPropagation());
             musicBtn.addEventListener(evt, (e) => e.stopPropagation());
+            autoTourBtn.addEventListener(evt, (e) => e.stopPropagation());
+            hudPanel.addEventListener(evt, (e) => e.stopPropagation());
         });
 
         // --- 1. Thiết lập Không gian Three.js ---
@@ -313,7 +592,7 @@
         const scene = new THREE.Scene();
         
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
-        camera.position.set(0, 500, 1200); // Đặt camera ở xa tít vũ trụ trước khi bấm nút Bắt đầu
+        camera.position.set(0, 500, 1200);
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -590,6 +869,63 @@
         });
         const fireworkSystem = new THREE.Points(fireworkGeometry, fireworkMaterial);
         scene.add(fireworkSystem);
+
+        function createThemeShockwave(theme) {
+            const particleCount = window.innerWidth < 600 ? 520 : 900;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const inner = new THREE.Color(theme.inner);
+            const outer = new THREE.Color(theme.outer);
+
+            for (let i = 0; i < particleCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const elevation = Math.acos(2 * Math.random() - 1);
+                const radius = 14 + Math.random() * 5;
+                const x = Math.sin(elevation) * Math.cos(angle) * radius;
+                const y = Math.cos(elevation) * radius * 0.55;
+                const z = Math.sin(elevation) * Math.sin(angle) * radius;
+                const mixed = inner.clone().lerp(outer, Math.random());
+
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+                colors[i * 3] = mixed.r;
+                colors[i * 3 + 1] = mixed.g;
+                colors[i * 3 + 2] = mixed.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: window.innerWidth < 600 ? 2.4 : 2.8,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.95,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            const wave = new THREE.Points(geometry, material);
+            wave.scale.set(0.1, 0.1, 0.1);
+            scene.add(wave);
+
+            gsap.timeline({
+                onComplete: () => {
+                    scene.remove(wave);
+                    geometry.dispose();
+                    material.dispose();
+                }
+            })
+            .to(wave.scale, { x: 34, y: 34, z: 34, duration: 1.35, ease: 'power3.out' }, 0)
+            .to(wave.rotation, { y: Math.PI * 1.6, z: Math.PI * 0.35, duration: 1.35, ease: 'power2.out' }, 0)
+            .to(material, { opacity: 0, duration: 1.15, ease: 'power2.in' }, 0.2);
+
+            gsap.fromTo(bloomPass, { strength: 2.3 }, { strength: 1.2, duration: 1.4, ease: 'power2.out' });
+            document.documentElement.style.setProperty('--hud-accent', theme.inner);
+            document.documentElement.style.setProperty('--hud-accent-soft', theme.nebula);
+        }
         
         function createFirework(position) {
             const colors = [0xff69b4, 0xff2a6d, 0xff8ebb, 0xffffff, 0xffd700];
@@ -636,6 +972,7 @@
             }
             fireworkGeometry.attributes.position.needsUpdate = true;
             fireworkGeometry.attributes.color.needsUpdate = true;
+            fireworkGeometry.attributes.opacity.needsUpdate = true;
         }
 
         function resetItemPosition(mesh, isFirstTime = false) {
@@ -668,7 +1005,7 @@
             }
             const mesh = new THREE.Mesh(geometry, material);
             resetItemPosition(mesh, true); 
-            mesh.userData = { speed: 0.3 + Math.random() * 0.4, delay: index * 6 };
+            mesh.userData = { speed: 0.3 + Math.random() * 0.4, delay: index * 6, type: data.type, value: data.value };
             scene.add(mesh);
             floatingItems.push(mesh);
         });
@@ -705,8 +1042,11 @@
         });
 
         function executeInteraction(clientX, clientY) {
-            if (splashScreen.style.display !== 'none') return; // Chặn tương tác khi chưa bấm mở quà
-            if (clientX > window.innerWidth - 300 && clientY < 80) return; // Chặn khu vực cụm nút UI điều khiển
+            if (splashScreen.style.display !== 'none') return;
+            if (clientX < 60 && clientY < 60) return; // Chặn khu vực nút hamburger
+            if (clientX > window.innerWidth - 340 && clientY < 80) return; // Chặn khu vực menu
+
+            if (isAutoTour) setAutoTour(false);
 
             mouse.x = (clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(clientY / window.innerHeight) * 2 + 1;
@@ -807,9 +1147,129 @@
         }
 
         // --- 6. Logic Hàm Thay Đổi Theme Màu Động ---
-        function applyTheme(themeKey) {
+        function showTourCaption() {
+            if (!tourCaption || !rawContents) return;
+            const messages = rawContents.filter(item => item.type === 'text');
+            const message = messages[Math.floor(Math.random() * messages.length)];
+            tourCaption.textContent = message ? message.value : 'Happy Birthday!';
+            gsap.killTweensOf(tourCaption);
+            gsap.fromTo(tourCaption,
+                { opacity: 0, y: 18, scale: 0.94 },
+                { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out',
+                    onComplete: () => {
+                        gsap.to(tourCaption, { opacity: 0, y: -14, duration: 0.8, delay: 2.2, ease: 'power2.in' });
+                    }
+                }
+            );
+        }
+
+        function pickTourItem() {
+            const imageItems = floatingItems.filter(item => item.visible && item.userData.type === 'image' && item !== selectedItem);
+            const pool = imageItems.length ? imageItems : floatingItems.filter(item => item.visible && item !== selectedItem);
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function focusTourItem(item) {
+            if (!item) return;
+            if (selectedItem && selectedItem !== item) {
+                selectedItem.userData.speed = selectedItem.userData.originalSpeed || selectedItem.userData.speed;
+                gsap.to(selectedItem.scale, { x: 1, y: 1, z: 1, duration: 0.4, ease: 'power2.out' });
+            }
+
+            selectedItem = item;
+            originalCameraPos = camera.position.clone();
+            selectedItem.userData.originalSpeed = selectedItem.userData.originalSpeed || selectedItem.userData.speed;
+            selectedItem.userData.speed = 0;
+            isZoomed = true;
+            controls.enabled = false;
+
+            const targetDir = item.position.clone().normalize();
+            if(targetDir.length() === 0) targetDir.set(0, 0, 1);
+            
+            // Camera vuông góc với mặt hình ảnh
+            const distance = window.innerWidth < 600 ? 60 : 50;
+            const cameraOffset = targetDir.multiplyScalar(distance);
+            const targetPos = item.position.clone().add(cameraOffset);
+
+            if (autoTourTween) autoTourTween.kill();
+            autoTourTween = gsap.timeline({ 
+                onComplete: () => {
+                    camera.lookAt(item.position);
+                    showTourCaption();
+                }
+            })
+                .to(camera.position, {
+                    x: targetPos.x,
+                    y: targetPos.y,
+                    z: targetPos.z,
+                    duration: 2.3,
+                    ease: 'power2.inOut',
+                    onUpdate: () => {
+                        camera.lookAt(item.position);
+                    }
+                }, 0)
+                .to(controls.target, {
+                    x: item.position.x,
+                    y: item.position.y,
+                    z: item.position.z,
+                    duration: 2.3,
+                    ease: 'power2.inOut'
+                }, 0)
+                .to(item.scale, {
+                    x: 1.7,
+                    y: 1.7,
+                    z: 1.7,
+                    duration: 1.2,
+                    ease: 'back.out(1.5)'
+                }, 0.55);
+        }
+
+        function runAutoTourStep() {
+            if (!isAutoTour) return;
+            focusTourItem(pickTourItem());
+            autoTourTimer = setTimeout(runAutoTourStep, 5600);
+        }
+
+        function setAutoTour(enabled) {
+            isAutoTour = enabled;
+            autoTourBtn.classList.toggle('active', enabled);
+            autoTourBtn.textContent = enabled ? 'AUTO ON' : 'AUTO';
+
+            if (autoTourTimer) {
+                clearTimeout(autoTourTimer);
+                autoTourTimer = null;
+            }
+
+            if (enabled) {
+                closeZoom();
+                runAutoTourStep();
+            } else {
+                if (autoTourTween) autoTourTween.kill();
+                closeZoom();
+                controls.enabled = true;
+                if (tourCaption) gsap.to(tourCaption, { opacity: 0, duration: 0.25 });
+            }
+        }
+
+        autoTourBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setAutoTour(!isAutoTour);
+        });
+
+        function applyTheme(themeKey, withTransition = true) {
             const theme = themes[themeKey];
             if (!theme) return;
+
+            if (withTransition) {
+                activeThemeKey = themeKey;
+                createThemeShockwave(theme);
+                gsap.fromTo(blackHoleGroup.scale,
+                    { x: 0.92, y: 0.92, z: 0.92 },
+                    { x: 1, y: 1, z: 1, duration: 0.7, ease: 'elastic.out(1, 0.45)' }
+                );
+                gsap.delayedCall(0.2, () => applyTheme(themeKey, false));
+                return;
+            }
 
             // 1. Màu bầu trời sao
             starsMaterial.color.set(theme.star);
@@ -890,13 +1350,11 @@
                     item.position.add(directionOut.multiplyScalar(item.userData.speed));
                     item.position.y += Math.sin(elapsedTime * 2 + distanceToCenter * 0.05) * 0.12;
 
-                    // Tăng kích thước dần từ 0 lên 1 khi bắt đầu bay ra khỏi tâm hố đen
                     if (item !== selectedItem && item.scale.x < 1) {
                         const progress = Math.min(1, (distanceToCenter - 16) / 40);
                         item.scale.set(progress, progress, progress);
                     }
                 } else {
-                    // Tạo pháo hoa tại vị trí biến mất và đưa phần tử quay lại tâm hố đen
                     createFirework(item.position);
                     resetItemPosition(item, false);
                 }
