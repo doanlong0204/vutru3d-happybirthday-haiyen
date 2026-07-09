@@ -252,6 +252,33 @@
             color: #fff;
             text-shadow: 0 0 10px var(--hud-accent);
         }
+        .neural-mode {
+            position: relative;
+            min-height: 44px;
+            background: rgba(255, 255, 255, 0.075);
+            border: 0.5px solid rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-family: 'Orbitron', 'Rajdhani', 'Arial Narrow', Arial, sans-serif;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 18px rgba(255,255,255,0.04), 0 0 16px rgba(255, 42, 109, 0.18);
+            font-weight: 700;
+            outline: none;
+        }
+        .neural-mode:hover, .neural-mode.active {
+            border-color: rgba(255, 255, 255, 0.42);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), var(--hud-accent-soft));
+            box-shadow: 0 0 24px var(--hud-accent-soft), inset 0 0 20px rgba(255,255,255,0.08);
+            color: #fff;
+            text-shadow: 0 0 10px var(--hud-accent);
+        }
         
         /* CSS cho Màn hình chào mừng */
         #splashScreen {
@@ -405,6 +432,7 @@
             <div class="custom-options" role="listbox"></div>
         </div>
         <button class="auto-tour" id="autoTourBtn" type="button">AUTO</button>
+        <button class="neural-mode" id="neuralModeBtn" type="button">Ẩn vật thể</button>
         <button class="music-control" id="musicBtn">🔇 Tắt</button>
     </div>
 
@@ -658,6 +686,104 @@
         const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
         scene.add(ambientLight);
 
+        // --- 2.1 Tạo Thiên Hà Lấy Hố Đen Làm Trung Tâm ---
+        const galaxyGroup = new THREE.Group();
+        scene.add(galaxyGroup);
+
+        function createGalaxyArms(arms, color1, color2) {
+            const galaxyGeometry = new THREE.BufferGeometry();
+            const galaxyCount = 15000;
+            const positions = new Float32Array(galaxyCount * 3);
+            const colors = new Float32Array(galaxyCount * 3);
+
+            const colorA = new THREE.Color(color1);
+            const colorB = new THREE.Color(color2);
+
+            for (let i = 0; i < galaxyCount; i++) {
+                const i3 = i * 3;
+                
+                // Bán kính từ tâm hố đen
+                const radius = 20 + Math.random() * 400;
+                
+                // Góc xoay xoắn ốc
+                const spinAngle = radius * 0.02;
+                
+                // Góc nhánh (branch angle)
+                const branchAngle = (i % arms) / arms * Math.PI * 2;
+                
+                // Nhiễu ngẫu nhiên
+                const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 30;
+                const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 20;
+                const randomZ = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 30;
+
+                positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+                positions[i3 + 1] = randomY;
+                positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+                // Màu sắc gradient
+                const mixedColor = colorA.clone().lerp(colorB, Math.random());
+                colors[i3] = mixedColor.r;
+                colors[i3 + 1] = mixedColor.g;
+                colors[i3 + 2] = mixedColor.b;
+            }
+
+            galaxyGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            galaxyGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const galaxyMaterial = new THREE.PointsMaterial({
+                size: 1.2,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7,
+                blending: THREE.AdditiveBlending
+            });
+
+            return new THREE.Points(galaxyGeometry, galaxyMaterial);
+        }
+
+        // Tạo thiên hà với 4 nhánh xoắn ốc
+        const galaxyArms = createGalaxyArms(4, '#ff2a6d', '#05d9e8');
+        galaxyGroup.add(galaxyArms);
+
+        // Tạo thêm halo rực rỡ quanh thiên hà
+        const haloGeometry = new THREE.BufferGeometry();
+        const haloCount = 5000;
+        const haloPositions = new Float32Array(haloCount * 3);
+        const haloColors = new Float32Array(haloCount * 3);
+
+        const haloColor1 = new THREE.Color('#ffd700');
+const haloColor2 = new THREE.Color('#ff6b6b');
+
+        for (let i = 0; i < haloCount; i++) {
+            const i3 = i * 3;
+            const radius = 50 + Math.random() * 350;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI;
+
+            haloPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+            haloPositions[i3 + 1] = radius * Math.cos(phi) * 0.3;
+            haloPositions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+
+            const mixedColor = haloColor1.clone().lerp(haloColor2, Math.random());
+            haloColors[i3] = mixedColor.r;
+            haloColors[i3 + 1] = mixedColor.g;
+            haloColors[i3 + 2] = mixedColor.b;
+        }
+
+        haloGeometry.setAttribute('position', new THREE.BufferAttribute(haloPositions, 3));
+        haloGeometry.setAttribute('color', new THREE.BufferAttribute(haloColors, 3));
+
+        const haloMaterial = new THREE.PointsMaterial({
+            size: 0.8,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending
+        });
+
+        const galaxyHalo = new THREE.Points(haloGeometry, haloMaterial);
+        galaxyGroup.add(galaxyHalo);
+
         // --- 2. Tạo Nền Trời Sao ---
         const starsGeometry = new THREE.BufferGeometry();
         const starsCount = window.innerWidth < 600 ? 5000 : 10000; 
@@ -677,10 +803,10 @@
             canvasNebula.width = 256;
             canvasNebula.height = 256;
             const ctxN = canvasNebula.getContext('2d');
-            const grad = ctxN.createRadialGradient(128, 128, 5, 128, 128, 128);
-            grad.addColorStop(0, 'rgba(255, 42, 109, 0.35)');  
-            grad.addColorStop(0.4, 'rgba(120, 30, 200, 0.18)'); 
-            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            const grad = ctxN.createRadialGradient(128, 128, 5, 128, 128, 180);
+grad.addColorStop(0, 'rgba(255, 42, 109, 0.35)');  
+grad.addColorStop(0.4, 'rgba(120, 30, 200, 0.18)'); 
+grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctxN.fillStyle = grad;
             ctxN.fillRect(0, 0, 256, 256);
             return new THREE.CanvasTexture(canvasNebula);
@@ -703,35 +829,84 @@
             nebulaGroup.add(nebulaMesh);
         }
 
-        // --- 3. Tạo Hố Đen Trung Tâm ---
+        // --- 3. Tạo Hố Đen Trung Tâm (Interstellar Style) ---
         const blackHoleGroup = new THREE.Group();
         scene.add(blackHoleGroup);
 
-        const singularityGeo = new THREE.SphereGeometry(16, 32, 32); 
+        // Event horizon (lỗ đen thực sự)
+        const singularityGeo = new THREE.SphereGeometry(16, 64, 64);
         const singularityMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
         const singularity = new THREE.Mesh(singularityGeo, singularityMat);
         blackHoleGroup.add(singularity);
 
+        // Inner Accretion Disk (vòng đĩa nội - nóng và sáng)
+        const innerDiskCount = window.innerWidth < 600 ? 2000 : 4000;
+        const innerDiskGeometry = new THREE.BufferGeometry();
+        const innerDiskPositions = new Float32Array(innerDiskCount * 3);
+        const innerDiskColors = new Float32Array(innerDiskCount * 3);
+
+        const colorInnerHot = new THREE.Color('#ffffff'); // Trắng nóng
+        const colorInnerWarm = new THREE.Color('#ff6b35'); // Cam nóng
+
+        for (let i = 0; i < innerDiskCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 17 + Math.random() * 8; // Gần lỗ đen hơn
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            const y = (Math.random() - 0.5) * 0.5 + (Math.sin(radius * 0.8) * 0.3); 
+
+            innerDiskPositions[i * 3] = x;
+            innerDiskPositions[i * 3 + 1] = y;
+            innerDiskPositions[i * 3 + 2] = z;
+
+            const mixedColor = colorInnerHot.clone().lerp(colorInnerWarm, (radius - 17) / 8);
+            innerDiskColors[i * 3] = mixedColor.r;
+            innerDiskColors[i * 3 + 1] = mixedColor.g;
+            innerDiskColors[i * 3 + 2] = mixedColor.b;
+        }
+
+        innerDiskGeometry.setAttribute('position', new THREE.BufferAttribute(innerDiskPositions, 3));
+        innerDiskGeometry.setAttribute('color', new THREE.BufferAttribute(innerDiskColors, 3));
+
+        const innerDiskMaterial = new THREE.PointsMaterial({
+            size: 0.8, 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 1.0, 
+            blending: THREE.AdditiveBlending 
+        });
+        const innerAccretionDisk = new THREE.Points(innerDiskGeometry, innerDiskMaterial);
+        blackHoleGroup.add(innerAccretionDisk);
+
+        // Main Accretion Disk (đĩa chính)
         const diskCount = window.innerWidth < 600 ? 3000 : 6000; 
         const diskGeometry = new THREE.BufferGeometry();
         const diskPositions = new Float32Array(diskCount * 3);
         const diskColors = new Float32Array(diskCount * 3);
 
         const colorInner = new THREE.Color('#ff2a6d');
+        const colorMiddle = new THREE.Color('#ff8e53');
         const colorOuter = new THREE.Color('#ff8ebb');
 
         for (let i = 0; i < diskCount; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const radius = 18 + Math.random() * 35; 
+            const radius = 25 + Math.random() * 35; 
             const x = Math.cos(angle) * radius;
             const z = Math.sin(angle) * radius;
-            const y = (Math.random() - 0.5) * 2 + (Math.sin(radius * 0.5) * 1.5); 
+            const y = (Math.random() - 0.5) * 2 + (Math.sin(radius * 0.3) * 1.5); 
 
             diskPositions[i * 3] = x;
             diskPositions[i * 3 + 1] = y;
             diskPositions[i * 3 + 2] = z;
 
-            const mixedColor = colorInner.clone().lerp(colorOuter, (radius - 18) / 35);
+            // Multi-color gradient
+            let mixedColor;
+            if (radius < 35) {
+                mixedColor = colorInner.clone().lerp(colorMiddle, (radius - 25) / 10);
+            } else {
+                mixedColor = colorMiddle.clone().lerp(colorOuter, (radius - 35) / 25);
+            }
+            
             diskColors[i * 3] = mixedColor.r;
             diskColors[i * 3 + 1] = mixedColor.g;
             diskColors[i * 3 + 2] = mixedColor.b;
@@ -741,10 +916,245 @@
         diskGeometry.setAttribute('color', new THREE.BufferAttribute(diskColors, 3));
 
         const diskMaterial = new THREE.PointsMaterial({
-            size: 0.8, vertexColors: true, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending 
+            size: 1.2, 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.85, 
+            blending: THREE.AdditiveBlending 
         });
         const accretionDisk = new THREE.Points(diskGeometry, diskMaterial);
         blackHoleGroup.add(accretionDisk);
+
+        // Outer Accretion Disk (vòng đĩa ngoại - mát và đỏ)
+        const outerDiskCount = window.innerWidth < 600 ? 1500 : 3000;
+        const outerDiskGeometry = new THREE.BufferGeometry();
+        const outerDiskPositions = new Float32Array(outerDiskCount * 3);
+        const outerDiskColors = new Float32Array(outerDiskCount * 3);
+
+        const colorOuterWarm = new THREE.Color('#ff8ebb');
+        const colorOuterCool = new THREE.Color('#8b5a9e'); // Tím lạnh
+
+        for (let i = 0; i < outerDiskCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 60 + Math.random() * 25; 
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            const y = (Math.random() - 0.5) * 3 + (Math.sin(radius * 0.2) * 2); 
+
+            outerDiskPositions[i * 3] = x;
+            outerDiskPositions[i * 3 + 1] = y;
+            outerDiskPositions[i * 3 + 2] = z;
+
+            const mixedColor = colorOuterWarm.clone().lerp(colorOuterCool, (radius - 60) / 25);
+            outerDiskColors[i * 3] = mixedColor.r;
+            outerDiskColors[i * 3 + 1] = mixedColor.g;
+            outerDiskColors[i * 3 + 2] = mixedColor.b;
+        }
+
+        outerDiskGeometry.setAttribute('position', new THREE.BufferAttribute(outerDiskPositions, 3));
+        outerDiskGeometry.setAttribute('color', new THREE.BufferAttribute(outerDiskColors, 3));
+
+        const outerDiskMaterial = new THREE.PointsMaterial({
+            size: 1.5, 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.6, 
+            blending: THREE.AdditiveBlending 
+        });
+        const outerAccretionDisk = new THREE.Points(outerDiskGeometry, outerDiskMaterial);
+        blackHoleGroup.add(outerAccretionDisk);
+
+        // Gravitational Lensing Effect (hiệu ứng bẻ cong ánh sáng)
+        const lensingGeo = new THREE.SphereGeometry(18, 64, 64);
+        const lensingMat = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                viewVector: { value: camera.position }
+            },
+            vertexShader: `
+                uniform vec3 viewVector;
+                varying float intensity;
+                void main() {
+                    vec3 vNormal = normalize(normalMatrix * normal);
+                    vec3 vNormel = normalize(normalMatrix * viewVector);
+                    intensity = pow(0.6 - dot(vNormal, vNormel), 2.0);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float time;
+                varying float intensity;
+                void main() {
+                    vec3 atmosphere = vec3(1.0, 0.6, 0.3) * intensity;
+                    gl_FragColor = vec4(atmosphere, intensity * 0.5);
+                }
+            `,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true
+        });
+        const lensingSphere = new THREE.Mesh(lensingGeo, lensingMat);
+        blackHoleGroup.add(lensingSphere);
+
+        // Accretion Glow (ánh sáng bao quanh)
+       
+        // --- 4.1 Chế Độ Thần Kinh Số (Cybernetic Neural Network) ---
+        let isNeuralMode = false;
+        let neuralNetworkLines = null;
+        let neuralNetworkMaterial = null;
+        const neuralModeBtn = document.getElementById('neuralModeBtn');
+
+        // Tạo mạng lưới thần kinh
+        function createNeuralNetwork() {
+            if (neuralNetworkLines) {
+                scene.remove(neuralNetworkLines);
+                neuralNetworkLines.geometry.dispose();
+                neuralNetworkLines = null;
+            }
+
+            const maxConnections = 500; // Số kết nối tối đa
+            const connectionDistance = 150; // Khoảng cách tối đa để kết nối
+
+            const linePositions = [];
+            const lineColors = [];
+
+            // Lấy vị trí của tất cả các floating items
+            const itemPositions = floatingItems.map(item => item.position.clone());
+
+            // Tính toán ma trận khoảng cách và tạo kết nối
+            for (let i = 0; i < itemPositions.length; i++) {
+                for (let j = i + 1; j < itemPositions.length; j++) {
+                    if (linePositions.length / 3 >= maxConnections) break;
+
+                    const distance = itemPositions[i].distanceTo(itemPositions[j]);
+
+                    if (distance < connectionDistance) {
+                        // Thêm vị trí đường nối
+                        linePositions.push(
+                            itemPositions[i].x, itemPositions[i].y, itemPositions[i].z,
+                            itemPositions[j].x, itemPositions[j].y, itemPositions[j].z
+                        );
+
+                        // Màu sắc dựa trên khoảng cách (càng gần càng sáng)
+                        const intensity = 1 - (distance / connectionDistance);
+                        const color = new THREE.Color().setHSL(0.8 + Math.random() * 0.4, 1, 0.5 + intensity * 0.5);
+
+                        lineColors.push(color.r, color.g, color.b);
+                        lineColors.push(color.r, color.g, color.b);
+                    }
+                }
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(lineColors, 3));
+
+            neuralNetworkMaterial = new THREE.LineBasicMaterial({
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending,
+                linewidth: 1
+            });
+
+            neuralNetworkLines = new THREE.LineSegments(geometry, neuralNetworkMaterial);
+            scene.add(neuralNetworkLines);
+        }
+
+        // Cập nhật mạng lưới thần kinh động
+        function updateNeuralNetwork() {
+            if (!isNeuralMode || !neuralNetworkLines) return;
+
+            const maxConnections = 500;
+            const connectionDistance = 150;
+
+            const linePositions = [];
+            const lineColors = [];
+
+            const itemPositions = floatingItems.map(item => item.position.clone());
+
+            for (let i = 0; i < itemPositions.length; i++) {
+                for (let j = i + 1; j < itemPositions.length; j++) {
+                    if (linePositions.length / 3 >= maxConnections) break;
+
+                    const distance = itemPositions[i].distanceTo(itemPositions[j]);
+
+                    if (distance < connectionDistance) {
+                        linePositions.push(
+                            itemPositions[i].x, itemPositions[i].y, itemPositions[i].z,
+                            itemPositions[j].x, itemPositions[j].y, itemPositions[j].z
+                        );
+
+                        const intensity = 1 - (distance / connectionDistance);
+                        const color = new THREE.Color().setHSL(0.8 + Math.random() * 0.4, 1, 0.5 + intensity * 0.5);
+
+                        lineColors.push(color.r, color.g, color.b);
+                        lineColors.push(color.r, color.g, color.b);
+                    }
+                }
+            }
+
+            neuralNetworkLines.geometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            neuralNetworkLines.geometry.setAttribute('color', new THREE.Float32BufferAttribute(lineColors, 3));
+            neuralNetworkLines.geometry.attributes.position.needsUpdate = true;
+            neuralNetworkLines.geometry.attributes.color.needsUpdate = true;
+        }
+
+        // Chuyển đổi chế độ thần kinh
+        function toggleNeuralMode() {
+            isNeuralMode = !isNeuralMode;
+            neuralModeBtn.classList.toggle('active', isNeuralMode);
+            neuralModeBtn.textContent = isNeuralMode ? 'Ẩn vật thể ON' : 'Ẩn vật thể';
+
+            if (isNeuralMode) {
+                // Ẩn các đối tượng vũ trụ
+                blackHoleGroup.visible = false;
+                nebulaGroup.visible = false;
+                stars.visible = false;
+
+                // Thay đổi màu nền
+                scene.background = new THREE.Color(0x000010);
+
+                // Tạo mạng lưới thần kinh
+                createNeuralNetwork();
+
+                // Hiệu ứng chuyển đổi
+                gsap.to(floatingItems, {
+                    scale: 1.2,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+
+            } else {
+                // Hiện lại các đối tượng vũ trụ
+                blackHoleGroup.visible = true;
+                nebulaGroup.visible = true;
+                star.visible = true;
+
+
+                // Khôi phục màu nền
+                scene.background = new THREE.Color(0x000002);
+
+                // Xóa mạng lưới thần kinh
+                if (neuralNetworkLines) {
+                    scene.remove(neuralNetworkLines);
+                    neuralNetworkLines.geometry.dispose();
+                    neuralNetworkLines = null;
+                }
+
+                // Hiệu ứng chuyển đổi
+                gsap.to(floatingItems, {
+                    scale: 1,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+            }
+        }
+
+        neuralModeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleNeuralMode();
+        });
 
         // --- 4. Khởi Tạo Dữ Liệu Hình Ảnh & Lời Chúc ---
         const rawContents = [
@@ -865,7 +1275,7 @@
         fireworkGeometry.setAttribute('opacity', new THREE.BufferAttribute(fireworkOpacities, 1));
         
         const fireworkMaterial = new THREE.PointsMaterial({
-            size: 2.0, vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending
+            size: 3.0, vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending
         });
         const fireworkSystem = new THREE.Points(fireworkGeometry, fireworkMaterial);
         scene.add(fireworkSystem);
@@ -881,7 +1291,7 @@
             for (let i = 0; i < particleCount; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const elevation = Math.acos(2 * Math.random() - 1);
-                const radius = 14 + Math.random() * 5;
+                const radius = 18 + Math.random() * 8;
                 const x = Math.sin(elevation) * Math.cos(angle) * radius;
                 const y = Math.cos(elevation) * radius * 0.55;
                 const z = Math.sin(elevation) * Math.sin(angle) * radius;
@@ -899,7 +1309,7 @@
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
             const material = new THREE.PointsMaterial({
-                size: window.innerWidth < 600 ? 2.4 : 2.8,
+                size: window.innerWidth < 600 ? 3.5 : 4.0,
                 vertexColors: true,
                 transparent: true,
                 opacity: 0.95,
@@ -1035,7 +1445,7 @@
             }
         });
 
-        window.addEventListener('click', (e) => {
+        window.addEventListener('dblclick', (e) => {
             if (e.clientX !== undefined) {
                 executeInteraction(e.clientX, e.clientY);
             }
@@ -1274,10 +1684,31 @@
             // 1. Màu bầu trời sao
             starsMaterial.color.set(theme.star);
 
-            // 2. Màu Đĩa bồi tụ hố đen trung tâm
+            // 2. Màu Đĩa bồi tụ hố đen trung tâm (cập nhật tất cả các đĩa)
+            
+            // Inner accretion disk (nóng)
+            const innerPositions = innerAccretionDisk.geometry.attributes.position.array;
+            const innerColors = innerAccretionDisk.geometry.attributes.color.array;
+            const colorInnerHot = new THREE.Color('#ffffff');
+            const colorInnerWarm = new THREE.Color(theme.inner);
+
+            for (let i = 0; i < innerDiskCount; i++) {
+                const x = innerPositions[i * 3];
+                const z = innerPositions[i * 3 + 2];
+                const radius = Math.sqrt(x*x + z*z);
+                
+                const mixedColor = colorInnerHot.clone().lerp(colorInnerWarm, (radius - 17) / 8);
+                innerColors[i * 3] = mixedColor.r;
+                innerColors[i * 3 + 1] = mixedColor.g;
+                innerColors[i * 3 + 2] = mixedColor.b;
+            }
+            innerAccretionDisk.geometry.attributes.color.needsUpdate = true;
+
+            // Main accretion disk
             const positions = accretionDisk.geometry.attributes.position.array;
             const colors = accretionDisk.geometry.attributes.color.array;
             const colorInner = new THREE.Color(theme.inner);
+            const colorMiddle = new THREE.Color(theme.inner).clone().offsetHSL(0.05, 0.1, 0.1);
             const colorOuter = new THREE.Color(theme.outer);
 
             for (let i = 0; i < diskCount; i++) {
@@ -1285,14 +1716,66 @@
                 const z = positions[i * 3 + 2];
                 const radius = Math.sqrt(x*x + z*z);
                 
-                const mixedColor = colorInner.clone().lerp(colorOuter, (radius - 18) / 35);
+                let mixedColor;
+                if (radius < 35) {
+                    mixedColor = colorInner.clone().lerp(colorMiddle, (radius - 25) / 10);
+                } else {
+                    mixedColor = colorMiddle.clone().lerp(colorOuter, (radius - 35) / 25);
+                }
+                
                 colors[i * 3] = mixedColor.r;
                 colors[i * 3 + 1] = mixedColor.g;
                 colors[i * 3 + 2] = mixedColor.b;
             }
             accretionDisk.geometry.attributes.color.needsUpdate = true;
 
-            // 3. Làm mới Canvas mây Tinh vân nền
+            // Outer accretion disk (lạnh)
+            const outerPositions = outerAccretionDisk.geometry.attributes.position.array;
+            const outerColors = outerAccretionDisk.geometry.attributes.color.array;
+            const colorOuterWarm = new THREE.Color(theme.outer);
+            const colorOuterCool = new THREE.Color(theme.inner).clone().offsetHSL(-0.1, -0.2, -0.1);
+
+            for (let i = 0; i < outerDiskCount; i++) {
+                const x = outerPositions[i * 3];
+                const z = outerPositions[i * 3 + 2];
+                const radius = Math.sqrt(x*x + z*z);
+                
+                const mixedColor = colorOuterWarm.clone().lerp(colorOuterCool, (radius - 60) / 25);
+                outerColors[i * 3] = mixedColor.r;
+                outerColors[i * 3 + 1] = mixedColor.g;
+                outerColors[i * 3 + 2] = mixedColor.b;
+            }
+            outerAccretionDisk.geometry.attributes.color.needsUpdate = true;
+
+            // 3. Cập nhật glow effect
+            // 4. Cập nhật màu thiên hà
+            const galaxyPositions = galaxyArms.geometry.attributes.position.array;
+            const galaxyColors = galaxyArms.geometry.attributes.color.array;
+            const galaxyColor1 = new THREE.Color(theme.inner);
+            const galaxyColor2 = new THREE.Color(theme.outer);
+
+            for (let i = 0; i < 15000; i++) {
+                const mixedColor = galaxyColor1.clone().lerp(galaxyColor2, Math.random());
+                galaxyColors[i * 3] = mixedColor.r;
+                galaxyColors[i * 3 + 1] = mixedColor.g;
+                galaxyColors[i * 3 + 2] = mixedColor.b;
+            }
+            galaxyArms.geometry.attributes.color.needsUpdate = true;
+
+            // Cập nhật halo
+            const haloColors = galaxyHalo.geometry.attributes.color.array;
+            const haloColor1 = new THREE.Color(theme.inner);
+            const haloColor2 = new THREE.Color(theme.star);
+
+            for (let i = 0; i < 5000; i++) {
+                const mixedColor = haloColor1.clone().lerp(haloColor2, Math.random());
+                haloColors[i * 3] = mixedColor.r;
+                haloColors[i * 3 + 1] = mixedColor.g;
+                haloColors[i * 3 + 2] = mixedColor.b;
+            }
+            galaxyHalo.geometry.attributes.color.needsUpdate = true;
+
+            // 5. Làm mới Canvas mây Tinh vân nền
             nebulaGroup.children.forEach(cloud => {
                 const canvasN = document.createElement('canvas');
                 canvasN.width = 256; canvasN.height = 256;
@@ -1322,12 +1805,27 @@
             requestAnimationFrame(animate);
             const elapsedTime = clock.getElapsedTime();
 
-            accretionDisk.rotation.y = elapsedTime * -1.0; 
+            // Xoay tất cả các đĩa accretion với tốc độ khác nhau
+            innerAccretionDisk.rotation.y = elapsedTime * -2.0; // Nhanh nhất (nóng)
+            accretionDisk.rotation.y = elapsedTime * -1.0; // Trung bình
+            outerAccretionDisk.rotation.y = elapsedTime * -0.5; // Chậm nhất (lạnh)
             singularity.rotation.y = elapsedTime * 0.12;
+            
+            // Cập nhật lensing effect
+            lensingMat.uniforms.time.value = elapsedTime;
+            lensingMat.uniforms.viewVector.value = camera.position;
 
             nebulaGroup.children.forEach(cloud => {
                 cloud.rotation.z += cloud.userData.rotSpeed * 0.2;
             });
+
+            // Xoay thiên hà
+            galaxyArms.rotation.y += 0.0005;
+            galaxyHalo.rotation.y += 0.0003;
+            galaxyHalo.rotation.x += 0.0001;
+
+            // Cập nhật mạng lưới thần kinh
+            updateNeuralNetwork();
 
             floatingItems.forEach((item) => {
                 if(item.userData.delay > 0) {
