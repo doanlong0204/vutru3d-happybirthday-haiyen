@@ -279,7 +279,41 @@
             color: #fff;
             text-shadow: 0 0 10px var(--hud-accent);
         }
-        
+        /* ====================== CSS NÚT NGƯNG ĐỘNG ====================== */
+#pauseBtn {
+    min-height: 44px;
+    background: rgba(255, 255, 255, 0.075);
+    border: 0.5px solid rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    padding: 12px 16px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-family: 'Orbitron', 'Rajdhani', 'Arial Narrow', Arial, sans-serif;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: all 0.3s ease;
+    box-shadow: inset 0 0 18px rgba(255,255,255,0.04), 0 0 16px rgba(255, 42, 109, 0.18);
+    font-weight: 700;
+    outline: none;
+}
+
+#pauseBtn:hover {
+    border-color: rgba(255, 255, 255, 0.42);
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), var(--hud-accent-soft));
+    box-shadow: 0 0 24px var(--hud-accent-soft), inset 0 0 20px rgba(255,255,255,0.08);
+}
+
+#pauseBtn.active {
+    background: linear-gradient(135deg, #ff2a6d, #c81e5d);
+    color: white;
+    border-color: #ff2a6d;
+    text-shadow: 0 0 12px #ff2a6d;
+    box-shadow: 0 0 20px rgba(255, 42, 109, 0.6);
+}
+/* ============================================================ */
         /* CSS cho Màn hình chào mừng */
         #splashScreen {
             position: fixed;
@@ -424,7 +458,7 @@
             <option value="https://files.catbox.moe/86fjic.mp3">🎵 Giai điệu 06</option>
             <option value="https://github.com/doanlong0204/nthymusic/raw/refs/heads/main/hq2iid%20(mp3cut.net).mp3">🎵 Giai điệu 07</option>
             <option value="https://github.com/doanlong0204/nthymusic/raw/refs/heads/main/07xxi2%20(mp3cut.net)%20(1).mp3">🎵 Giai điệu 08</option>
-            <option value="https://github.com/doanlong0204/nthymusic/raw/refs/heads/main/fvxswe%20(mp3cut.net)%20(1).mp3">🎵 Giai điệu 09</option>
+            <option value="https://files.catbox.moe/l9203k.mp3">🎵 Giai điệu 09</option>
             <option value="https://files.catbox.moe/enzj1a.mp3">🎵 Đặc Cầu 😈</option>
         </select>
         <div class="custom-select" data-select="musicSelect">
@@ -433,8 +467,9 @@
         </div>
         <button class="auto-tour" id="autoTourBtn" type="button">AUTO</button>
         <button class="neural-mode" id="neuralModeBtn" type="button">Ẩn vật thể</button>
+        <button class="neural-mode" id="pauseBtn" type="button">NGƯNG ĐỘNG</button>
         <button class="music-control" id="musicBtn">🔇 Tắt</button>
-    </div>
+</div>
 
     <audio id="bgMusic" playsinline></audio>
     <canvas id="canvas3d"></canvas>
@@ -1003,6 +1038,10 @@ grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         let neuralNetworkLines = null;
         let neuralNetworkMaterial = null;
         const neuralModeBtn = document.getElementById('neuralModeBtn');
+// ==================== NGƯNG ĐỘNG THIÊN HÀ ====================
+let isPaused = false;
+const pauseBtn = document.getElementById('pauseBtn');
+// ===========================================================
 
         // Tạo mạng lưới thần kinh
         function createNeuralNetwork() {
@@ -1155,7 +1194,34 @@ grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             e.stopPropagation();
             toggleNeuralMode();
         });
+// ====================== HÀM TOGGLE PAUSE ======================
+function togglePause() {
+    isPaused = !isPaused;
+    
+    pauseBtn.classList.toggle('active', isPaused);
+    pauseBtn.textContent = isPaused ? 'TIẾP TỤC' : 'NGƯNG ĐỘNG';
 
+    // Hiệu ứng bloom khi pause / resume
+    if (isPaused) {
+        gsap.to(bloomPass, { 
+            strength: 0.5, 
+            duration: 0.8, 
+            ease: "power2.out" 
+        });
+    } else {
+        gsap.to(bloomPass, { 
+            strength: 1.2, 
+            duration: 1.2, 
+            ease: "power2.out" 
+        });
+    }
+}
+
+pauseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePause();
+});
+// ===============================================================
         // --- 4. Khởi Tạo Dữ Liệu Hình Ảnh & Lời Chúc ---
         const rawContents = [
             { type: 'text', value: 'Happy Birthday!' },
@@ -1798,70 +1864,77 @@ grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         });
 
         // --- 7. VÒNG LẶP HOẠT HỌA ---
-        const clock = new THREE.Clock();
-        const maxTravelDistance = 500; 
+const clock = new THREE.Clock();
+const maxTravelDistance = 500; 
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const elapsedTime = clock.getElapsedTime();
+function animate() {
+    requestAnimationFrame(animate);
 
-            // Xoay tất cả các đĩa accretion với tốc độ khác nhau
-            innerAccretionDisk.rotation.y = elapsedTime * -2.0; // Nhanh nhất (nóng)
-            accretionDisk.rotation.y = elapsedTime * -1.0; // Trung bình
-            outerAccretionDisk.rotation.y = elapsedTime * -0.5; // Chậm nhất (lạnh)
-            singularity.rotation.y = elapsedTime * 0.12;
+    if (!isPaused) {
+        const elapsedTime = clock.getElapsedTime();
+
+        // Xoay đĩa bồi tụ hố đen
+        innerAccretionDisk.rotation.y = elapsedTime * -2.0;
+        accretionDisk.rotation.y = elapsedTime * -1.0;
+        outerAccretionDisk.rotation.y = elapsedTime * -0.5;
+        singularity.rotation.y = elapsedTime * 0.12;
+        
+        // Cập nhật hiệu ứng lensing
+        lensingMat.uniforms.time.value = elapsedTime;
+        lensingMat.uniforms.viewVector.value = camera.position;
+
+        // Xoay tinh vân
+        nebulaGroup.children.forEach(cloud => {
+            cloud.rotation.z += cloud.userData.rotSpeed * 0.2;
+        });
+
+        // Xoay thiên hà
+        galaxyArms.rotation.y += 0.0005;
+        galaxyHalo.rotation.y += 0.0003;
+        galaxyHalo.rotation.x += 0.0001;
+
+        // Cập nhật mạng lưới thần kinh
+        updateNeuralNetwork();
+
+        // Cập nhật các vật thể nổi (ảnh + chữ)
+        floatingItems.forEach((item) => {
+            if(item.userData.delay > 0) {
+                item.userData.delay--;
+                item.visible = false;
+                return;
+            }
+            item.visible = true;
             
-            // Cập nhật lensing effect
-            lensingMat.uniforms.time.value = elapsedTime;
-            lensingMat.uniforms.viewVector.value = camera.position;
+            if (item !== selectedItem) {
+                item.lookAt(camera.position);
+            }
 
-            nebulaGroup.children.forEach(cloud => {
-                cloud.rotation.z += cloud.userData.rotSpeed * 0.2;
-            });
+            const distanceToCenter = item.position.length();
 
-            // Xoay thiên hà
-            galaxyArms.rotation.y += 0.0005;
-            galaxyHalo.rotation.y += 0.0003;
-            galaxyHalo.rotation.x += 0.0001;
-
-            // Cập nhật mạng lưới thần kinh
-            updateNeuralNetwork();
-
-            floatingItems.forEach((item) => {
-                if(item.userData.delay > 0) {
-                    item.userData.delay--;
-                    item.visible = false;
-                    return;
-                }
-                item.visible = true;
+            if (distanceToCenter < maxTravelDistance) {
+                const directionOut = item.position.clone().normalize();
+                if(directionOut.length() === 0) directionOut.set(1, 0, 0); 
                 
-                if (item !== selectedItem) {
-                    item.lookAt(camera.position);
+                item.position.add(directionOut.multiplyScalar(item.userData.speed));
+                item.position.y += Math.sin(elapsedTime * 2 + distanceToCenter * 0.05) * 0.12;
+
+                if (item !== selectedItem && item.scale.x < 1) {
+                    const progress = Math.min(1, (distanceToCenter - 16) / 40);
+                    item.scale.set(progress, progress, progress);
                 }
+            } else {
+                createFirework(item.position);
+                resetItemPosition(item, false);
+            }
+        });
 
-                const distanceToCenter = item.position.length();
+        updateFireworks();
+    }
 
-                if (distanceToCenter < maxTravelDistance) {
-                    const directionOut = item.position.clone().normalize();
-                    if(directionOut.length() === 0) directionOut.set(1, 0, 0); 
-                    
-                    item.position.add(directionOut.multiplyScalar(item.userData.speed));
-                    item.position.y += Math.sin(elapsedTime * 2 + distanceToCenter * 0.05) * 0.12;
-
-                    if (item !== selectedItem && item.scale.x < 1) {
-                        const progress = Math.min(1, (distanceToCenter - 16) / 40);
-                        item.scale.set(progress, progress, progress);
-                    }
-                } else {
-                    createFirework(item.position);
-                    resetItemPosition(item, false);
-                }
-            });
-
-            updateFireworks();
-            controls.update();
-            composer.render();
-        }
+    // Luôn cập nhật controls và render (kể cả khi pause)
+    controls.update();
+    composer.render();
+}
 
         // --- 8. Xử lý Tương thích Kích thước Màn hình (Resize) ---
         window.addEventListener('resize', () => {
